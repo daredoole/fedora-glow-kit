@@ -156,7 +156,6 @@ It does not silently enable disruptive USB blocking or firewall lockdowns.
 
 - OpenAI Codex CLI via `npm install -g @openai/codex`
 - Anthropic Claude Code via `npm install -g @anthropic-ai/claude-code`
-- Hermes only through a user-provided `HERMES_INSTALL_COMMAND`, because no trusted local Hermes package was detected
 
 No AI API keys, account files, tokens, prompts, histories, or tool state are copied.
 

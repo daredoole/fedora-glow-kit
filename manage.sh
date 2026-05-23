@@ -55,7 +55,7 @@ run_section kde "KDE Desktop Customization" \
   "bash '$ROOT_DIR/install-kde.sh'"
 
 run_section ai "AI CLI Tools" \
-  "Installs AI terminal tools like Codex CLI and Claude Code. Hermes is included as a manual/env-provided option because no trusted local package was detected." \
+  "Installs opt-in AI terminal tools like Codex CLI and Claude Code without copying API keys, account files, prompts, histories, or tool state." \
   "bash '$ROOT_DIR/install-ai.sh'"
 
 run_section security "Security Best Practices" \

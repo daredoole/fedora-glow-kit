@@ -46,7 +46,6 @@ install_npm_global_if_missing() {
 ui_section "AI tool notes" 2>/dev/null || true
 printf 'Codex CLI: official OpenAI npm package @openai/codex.\n'
 printf 'Claude Code: official Anthropic npm package @anthropic-ai/claude-code.\n'
-printf 'Hermes: no trusted local command/package was detected; this script only runs HERMES_INSTALL_COMMAND if you provide it.\n'
 printf 'No API keys, tokens, account files, or AI tool state are copied.\n\n'
 
 if ask "Install OpenAI Codex CLI?" "y"; then
@@ -55,15 +54,6 @@ fi
 
 if ask "Install Anthropic Claude Code CLI?" "y"; then
   install_npm_global_if_missing claude @anthropic-ai/claude-code
-fi
-
-if ask "Install Hermes using HERMES_INSTALL_COMMAND, if set?" "n"; then
-  if [ -n "${HERMES_INSTALL_COMMAND:-}" ]; then
-    bash -c "$HERMES_INSTALL_COMMAND"
-    CHANGED+=("ran HERMES_INSTALL_COMMAND")
-  else
-    SKIPPED+=("Hermes install skipped; HERMES_INSTALL_COMMAND not set")
-  fi
 fi
 
 echo
