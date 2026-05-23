@@ -1,0 +1,4 @@
+name = "kde-polish"
+description = "KDE Plasma visual polish only."
+sections = ["kde"]
+risk = "medium"

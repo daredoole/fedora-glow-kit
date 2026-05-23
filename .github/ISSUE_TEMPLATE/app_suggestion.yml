@@ -1,0 +1,27 @@
+name: App suggestion
+description: Suggest a package, Flatpak, tool, or KDE tweak
+title: "[App]: "
+labels: ["enhancement", "app-suggestion"]
+body:
+  - type: input
+    id: app
+    attributes:
+      label: App or tweak
+    validations:
+      required: true
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risk tier
+      options:
+        - Low
+        - Medium
+        - High
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why should it be included?
+    validations:
+      required: true

@@ -1,6 +1,6 @@
 # Security Policy
 
-Fedora Glow Kit is a public starter kit for Fedora setup scripts and sanitized configuration samples. Please treat supply-chain issues seriously: install scripts, third-party repository prompts, browser extension policies, packaged KDE assets, and shell startup changes are all security-sensitive.
+Fedora Plasma Glow Kit is a public starter kit for Fedora setup scripts and sanitized configuration samples. Please treat supply-chain issues seriously: install scripts, third-party repository prompts, browser extension policies, packaged KDE assets, and shell startup changes are all security-sensitive.
 
 ## Supported Versions
 
@@ -10,7 +10,7 @@ Only the `main` branch is supported.
 
 Please report security issues privately through GitHub Security Advisories:
 
-https://github.com/daredoole/fedora-glow-kit/security/advisories/new
+https://github.com/daredoole/fedora-plasma-glow-kit/security/advisories/new
 
 If GitHub advisories are unavailable, open a minimal public issue that says a private security report is needed, without posting exploit details, secrets, or private hostnames.
 

@@ -53,8 +53,8 @@ ui_intro() {
   local frame
   printf '%s' "$UI_CYAN"
   for frame in "${frames[@]}"; do
-    printf '\rFedora Glow Kit %s' "$frame"
+    printf '\rFedora Plasma Glow Kit %s' "$frame"
     sleep 0.05
   done
-  printf '\rFedora Glow Kit ready     %s\n' "$UI_RESET"
+  printf '\rFedora Plasma Glow Kit ready     %s\n' "$UI_RESET"
 }

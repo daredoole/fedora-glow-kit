@@ -6,21 +6,31 @@ DNF="${DNF:-dnf}"
 CHANGED=()
 SKIPPED=()
 LAST_BACKUP_PATH=""
-STATE_DIR="$HOME/.local/state/fedora-starter-kit"
+STATE_DIR="$HOME/.local/state/fedora-plasma-glow-kit"
 STATE_FILE="$STATE_DIR/install.state"
 
 # shellcheck source=/dev/null
 # shellcheck disable=SC1091
 [ -f "$ROOT_DIR/shell/ui.sh" ] && . "$ROOT_DIR/shell/ui.sh"
 ui_intro 2>/dev/null || true
-ui_title "Fedora Glow Kit KDE" 2>/dev/null || echo "Fedora Glow Kit KDE"
+ui_title "Fedora Plasma Glow Kit KDE" 2>/dev/null || echo "Fedora Plasma Glow Kit KDE"
 
 ask() {
   local prompt="$1" default="${2:-n}" reply
+  case "${FEDORA_PLASMA_GLOW_ASSUME:-}" in
+  yes | YES | y | Y | true | TRUE | 1) return 0 ;;
+  no | NO | n | N | false | FALSE | 0) return 1 ;;
+  esac
   read -r -p "$prompt [$default] " reply || true
   reply="${reply:-$default}"
   [[ "$reply" =~ ^[Yy]$|^[Yy][Ee][Ss]$ ]]
 }
+
+# shellcheck source=/dev/null
+# shellcheck disable=SC1091
+[ -f "$ROOT_DIR/lib/preflight.sh" ] && . "$ROOT_DIR/lib/preflight.sh"
+
+fedora_hardware_preflight
 
 command_exists() {
   command -v "$1" >/dev/null 2>&1
@@ -29,7 +39,7 @@ command_exists() {
 record_state() {
   local key="$1" value="$2"
   mkdir -p "$STATE_DIR"
-  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >> "$STATE_FILE"
+  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >>"$STATE_FILE"
 }
 
 backup_path() {
@@ -192,7 +202,7 @@ fix_panel_alignment() {
       break;
     }
   ' | tail -n 1 || true)"
-  IFS='|' read -r panel_id icon_id spacer_a spacer_b left_ids right_ids <<< "$layout"
+  IFS='|' read -r panel_id icon_id spacer_a spacer_b left_ids right_ids <<<"$layout"
   if [ -n "$panel_id" ] && [ -n "$icon_id" ] && [ -n "$spacer_a" ] && [ -n "$spacer_b" ]; then
     order="${left_ids};${spacer_a};${icon_id};${spacer_b};${right_ids}"
     order="${order#;}"
@@ -215,7 +225,8 @@ tune_panel_colorizer() {
     return
   }
   backup_path "$plasma_cfg"
-  result="$(python3 - <<'PY'
+  result="$(
+    python3 - <<'PY'
 from pathlib import Path
 import configparser, json, re, sys
 
@@ -328,7 +339,7 @@ with path.open("w") as handle:
 
 print(f"UPDATED spacers={','.join(str(item) for item in sorted(set(total_spacers))) or 'none'}")
 PY
-)"
+  )"
   if [[ "$result" == NO_COLORIZER* ]]; then
     SKIPPED+=("Panel Colorizer is not configured on this Plasma panel")
     return
@@ -481,11 +492,11 @@ enable_kwin_scripts() {
   backup_path "$HOME/.config/kwinrc"
   while IFS= read -r plugin; do
     case "$plugin" in
-      ""|\#*) continue ;;
+    "" | \#*) continue ;;
     esac
     kwriteconfig6 --file kwinrc --group Plugins --key "${plugin}Enabled" true
     CHANGED+=("enabled KWin plugin $plugin")
-  done < "$list"
+  done <"$list"
   show_file_diff "$LAST_BACKUP_PATH" "$HOME/.config/kwinrc"
 }
 
@@ -583,5 +594,7 @@ reconfigure_kwin
 
 echo
 ui_title "KDE Customization Summary" 2>/dev/null || echo "KDE customization summary"
-printf 'Changed:\n'; printf '  - %s\n' "${CHANGED[@]:-(none)}"
-printf 'Skipped:\n'; printf '  - %s\n' "${SKIPPED[@]:-(none)}"
+printf 'Changed:\n'
+printf '  - %s\n' "${CHANGED[@]:-(none)}"
+printf 'Skipped:\n'
+printf '  - %s\n' "${SKIPPED[@]:-(none)}"

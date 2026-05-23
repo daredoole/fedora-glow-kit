@@ -1,6 +1,11 @@
-# Fedora Glow Kit
+# Fedora Plasma Glow Kit
 
-Fedora Glow Kit is a safe, reusable Fedora starter kit built from a real Fedora KDE/Workstation setup. Its goal is to give a friend a polished Linux baseline: useful CLI tools, shell quality-of-life, terminal customization, Firefox privacy/performance settings, KDE theming, optional desktop apps, and optional developer utilities.
+A polished, safe, reversible Fedora 44 KDE Plasma setup kit.
+
+
+A polished, safe, reversible Fedora 44 KDE Plasma setup kit.
+
+Fedora Plasma Glow Kit is a safe, reusable Fedora starter kit built from a real Fedora KDE/Workstation setup. Its goal is to give a friend a polished Linux baseline: useful CLI tools, shell quality-of-life, terminal customization, Firefox privacy/performance settings, KDE theming, optional desktop apps, and optional developer utilities.
 
 It is intentionally conservative. Installers ask before changing configs, back up files before edits, skip existing theme assets, and avoid copying private data such as browser profiles, SSH keys, tokens, work aliases, VPN state, cookies, history, credentials, or machine-specific project paths.
 
@@ -13,64 +18,64 @@ Credits for bundled assets, optional extension installs, themes, and upstream to
 Guided setup with install/revert/skip choices per section:
 
 ```bash
-git clone https://github.com/<you>/fedora-glow-kit.git
-cd fedora-glow-kit
+git clone https://github.com/daredoole/fedora-plasma-glow-kit.git
+cd fedora-plasma-glow-kit
 bash manage.sh
 ```
 
 If you are already inside the repo:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash manage.sh
 ```
 
 Core install:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash install.sh
 ```
 
 Optional extras:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash install-extras.sh
 ```
 
 KDE customization:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash install-kde.sh
 ```
 
 Security best-practice setup:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash install-security.sh
 ```
 
 AI CLI tools:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash install-ai.sh
 ```
 
 Revert kit-managed config changes:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash revert.sh
 ```
 
 Public-readiness audit before sharing:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash scripts/audit-public.sh
 ```
 
@@ -87,12 +92,80 @@ FEDORA_STARTER_NO_ANIMATION=1 bash install.sh
 NO_COLOR=1 bash install.sh
 ```
 
+## Mock Run / Dry Run
+
+Use `manage.sh --dry-run` to preview what would run without invoking installers, writing files, installing packages, enabling services, or changing your system:
+
+```bash
+bash manage.sh --dry-run --profile daily
+bash manage.sh --dry-run --section extras
+bash manage.sh --dry-run --section kde
+```
+
+## Fresh Fedora Hardware Preflight
+
+On a fresh Fedora install, update the system and firmware before applying desktop customization:
+
+```bash
+sudo dnf upgrade --refresh
+sudo fwupdmgr refresh --force
+sudo fwupdmgr get-updates
+sudo fwupdmgr update
+reboot
+```
+
+This matters most on new laptops, AMD APUs/GPUs, Wi-Fi chipsets, docks, and touchpads because the newest kernel, Mesa, and firmware packages can affect hardware behavior. The installer prompts for this check before making changes, but it does not run firmware updates automatically.
+
+## Windows SSD Dual Boot Preflight
+
+Before shrinking a Windows 11 `C:` partition to make room for Fedora on the same SSD, run the audit script from an elevated PowerShell window:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass -Force
+.\scripts\windows\Fedora-DualBoot-Preflight.ps1 -FedoraSpaceGB 120
+```
+
+The script checks admin rights, GPT/UEFI layout, BitLocker, Fast Startup, free space, recovery partitions, and the Windows-supported shrink range. It does not resize the disk or change Windows settings; if the checks pass, it prints the `Resize-Partition` command to run manually after backups and recovery-key prep.
+
+## Package Source Policy
+
+The kit prefers Fedora-managed packages first. CLI tools, KDE utilities, Catfish, ripgrep, codecs, security tools, and most extras install through `dnf` when available, so the installed system is not dependent on this repository after setup.
+
+Flatpak is used for optional desktop apps where that is the cleaner upstream distribution path. npm is limited to explicit opt-in AI CLI tools. RPM Fusion and COPR actions stay prompt-gated because they add third-party package sources.
+
+
+## Profiles
+
+The guided installer is still interactive by default, but the manager also supports profile and dry-run modes:
+
+```bash
+bash manage.sh --dry-run --profile daily
+bash manage.sh --yes --profile minimal
+bash manage.sh --section kde
+bash manage.sh --revert kde
+bash manage.sh --audit
+```
+
+Available profiles:
+
+- `minimal`
+- `daily`
+- `dev`
+- `kde-polish`
+- `media`
+- `gaming`
+- `privacy`
+- `ai`
+- `full-send`
+
+See `docs/` for Fedora 44 KDE Plasma recommendations, app choices, security model, Firefox policy notes, AI tool notes, troubleshooting, and recovery.
+
 ## What It Does
 
 `install.sh` installs the core command-line setup and optional safe configs:
 
 - zsh, starship, zellij, fastfetch
-- ripgrep, fd, bat, eza, fzf, zoxide
+- ripgrep (`rg`), fd, bat, eza, fzf, zoxide
 - jq, yq, btop, tree, tealdeer/tldr
 - git, GitHub CLI, git-delta, git-lfs
 - curl, wget, unzip, p7zip, rsync
@@ -108,17 +181,18 @@ NO_COLOR=1 bash install.sh
 
 `install-extras.sh` installs optional heavier tools and app groups:
 
-- Neovim, micro, kitty, WezTerm, lazygit
-- lightweight quick editors: KWrite, FeatherPad, GNOME Text Editor, and micro
+- Neovim, micro, kitty, WezTerm, lazygit, ripgrep
+- lightweight GUI utilities: Catfish file search, KWrite, FeatherPad, GNOME Text Editor, and micro
 - Go, Rust, Docker Compose
 - nvtop, iotop, sysstat, VAAPI/VDPAU tools
+- optional Tailscale package and separate `tailscaled` service enablement
 - terminal art tools like cmatrix, asciiquarium, pipes, cbonsai, fortune, cowsay, lolcat, figlet, toilet, nyancat, sl, and tty-clock
 - optional RPM Fusion repositories
 - optional media codecs and Mesa VAAPI/VDPAU packages
 - optional Bluetooth headphone codec/support packages
 - optional Flatpak groups for daily apps, gaming/media, messaging/social, and advanced/privacy/dev tools
 
-The recommended simple editor path is KWrite plus FeatherPad. They open quickly, support syntax highlighting and themes, and are better suited for quick config edits than a full IDE. The shell helper `qedit FILE` opens KWrite first, then FeatherPad, then GNOME Text Editor, then falls back to `$EDITOR`.
+The recommended simple editor path is KWrite plus FeatherPad. They open quickly, support syntax highlighting and themes, and are better suited for quick config edits than a full IDE. Catfish adds a lightweight graphical file search option. The shell helper `qedit FILE` opens KWrite first, then FeatherPad, then GNOME Text Editor, then falls back to `$EDITOR`.
 
 `install-kde.sh` installs KDE desktop customization:
 

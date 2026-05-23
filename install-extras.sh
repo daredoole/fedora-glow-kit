@@ -5,21 +5,31 @@ DNF="${DNF:-dnf}"
 CHANGED=()
 SKIPPED=()
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-STATE_DIR="$HOME/.local/state/fedora-starter-kit"
+STATE_DIR="$HOME/.local/state/fedora-plasma-glow-kit"
 STATE_FILE="$STATE_DIR/install.state"
 
 # shellcheck source=/dev/null
 # shellcheck disable=SC1091
 [ -f "$ROOT_DIR/shell/ui.sh" ] && . "$ROOT_DIR/shell/ui.sh"
 ui_intro 2>/dev/null || true
-ui_title "Fedora Glow Kit Extras" 2>/dev/null || echo "Fedora Glow Kit Extras"
+ui_title "Fedora Plasma Glow Kit Extras" 2>/dev/null || echo "Fedora Plasma Glow Kit Extras"
 
 ask() {
   local prompt="$1" default="${2:-n}" reply
+  case "${FEDORA_PLASMA_GLOW_ASSUME:-}" in
+  yes | YES | y | Y | true | TRUE | 1) return 0 ;;
+  no | NO | n | N | false | FALSE | 0) return 1 ;;
+  esac
   read -r -p "$prompt [$default] " reply || true
   reply="${reply:-$default}"
   [[ "$reply" =~ ^[Yy]$|^[Yy][Ee][Ss]$ ]]
 }
+
+# shellcheck source=/dev/null
+# shellcheck disable=SC1091
+[ -f "$ROOT_DIR/lib/preflight.sh" ] && . "$ROOT_DIR/lib/preflight.sh"
+
+fedora_hardware_preflight
 
 command_exists() {
   command -v "$1" >/dev/null 2>&1
@@ -28,7 +38,7 @@ command_exists() {
 record_state() {
   local key="$1" value="$2"
   mkdir -p "$STATE_DIR"
-  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >> "$STATE_FILE"
+  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >>"$STATE_FILE"
 }
 
 install_dnf() {
@@ -70,14 +80,14 @@ flatpak_install() {
 
 if ask "Install extra editors, terminals, and dev tools?" "y"; then
   ui_section "Developer Extras" 2>/dev/null || true
-  install_dnf_skip_unavailable neovim micro kitty wezterm lazygit git-delta golang rust cargo docker-compose direnv git-lfs just distrobox podman-compose
+  install_dnf_skip_unavailable neovim micro kitty wezterm lazygit ripgrep git-delta golang rust cargo docker-compose direnv git-lfs just distrobox podman-compose
 else
   SKIPPED+=("extra dev tools")
 fi
 
-if ask "Install lightweight GUI text editors for quick config edits?" "y"; then
-  ui_section "Lightweight Editors" 2>/dev/null || true
-  install_dnf_skip_unavailable kwrite featherpad gnome-text-editor micro
+if ask "Install lightweight GUI file search and text editors?" "y"; then
+  ui_section "Lightweight GUI Utilities" 2>/dev/null || true
+  install_dnf_skip_unavailable catfish kwrite featherpad gnome-text-editor micro
 fi
 
 if ask "Install KDE desktop customization packages?" "y"; then
@@ -95,6 +105,17 @@ fi
 if ask "Install monitoring and sysadmin tools?" "y"; then
   ui_section "Monitoring" 2>/dev/null || true
   install_dnf_skip_unavailable nvtop iotop sysstat vdpauinfo libva-utils
+fi
+
+if ask "Install Tailscale mesh VPN package from Fedora repos?" "n"; then
+  ui_section "Tailscale" 2>/dev/null || true
+  install_dnf_skip_unavailable tailscale
+fi
+
+if command_exists tailscale && ask "Enable and start tailscaled service? This does not join a tailnet." "n"; then
+  sudo systemctl enable --now tailscaled
+  CHANGED+=("enabled tailscaled service")
+  ui_info "Run 'sudo tailscale up' when ready to sign in and join a tailnet." 2>/dev/null || true
 fi
 
 if ask "Enable and start sysstat service?" "n"; then
@@ -175,5 +196,7 @@ fi
 
 echo
 ui_title "Extras Summary" 2>/dev/null || echo "Extras summary"
-printf 'Changed:\n'; printf '  - %s\n' "${CHANGED[@]:-(none)}"
-printf 'Skipped:\n'; printf '  - %s\n' "${SKIPPED[@]:-(none)}"
+printf 'Changed:\n'
+printf '  - %s\n' "${CHANGED[@]:-(none)}"
+printf 'Skipped:\n'
+printf '  - %s\n' "${SKIPPED[@]:-(none)}"

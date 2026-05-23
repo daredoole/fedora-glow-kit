@@ -8,21 +8,29 @@ INSTALLED=()
 SKIPPED=()
 CHANGED=()
 LAST_BACKUP_PATH=""
-STATE_DIR="$HOME/.local/state/fedora-starter-kit"
+STATE_DIR="$HOME/.local/state/fedora-plasma-glow-kit"
 STATE_FILE="$STATE_DIR/install.state"
 
 # shellcheck source=/dev/null
 # shellcheck disable=SC1091
 [ -f "$ROOT_DIR/shell/ui.sh" ] && . "$ROOT_DIR/shell/ui.sh"
 ui_intro 2>/dev/null || true
-ui_title "Fedora Glow Kit" 2>/dev/null || echo "Fedora Glow Kit"
+ui_title "Fedora Plasma Glow Kit" 2>/dev/null || echo "Fedora Plasma Glow Kit"
 
 ask() {
   local prompt="$1" default="${2:-n}" reply
+  case "${FEDORA_PLASMA_GLOW_ASSUME:-}" in
+  yes | YES | y | Y | true | TRUE | 1) return 0 ;;
+  no | NO | n | N | false | FALSE | 0) return 1 ;;
+  esac
   read -r -p "$prompt [$default] " reply || true
   reply="${reply:-$default}"
   [[ "$reply" =~ ^[Yy]$|^[Yy][Ee][Ss]$ ]]
 }
+
+# shellcheck source=/dev/null
+# shellcheck disable=SC1091
+[ -f "$ROOT_DIR/lib/preflight.sh" ] && . "$ROOT_DIR/lib/preflight.sh"
 
 command_exists() {
   command -v "$1" >/dev/null 2>&1
@@ -31,11 +39,12 @@ command_exists() {
 record_state() {
   local key="$1" value="$2"
   mkdir -p "$STATE_DIR"
-  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >> "$STATE_FILE"
+  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >>"$STATE_FILE"
 }
 
 add_pkg_if_missing() {
-  local cmd="$1"; shift
+  local cmd="$1"
+  shift
   if command_exists "$cmd"; then
     SKIPPED+=("$cmd already present")
   else
@@ -81,7 +90,7 @@ install_file() {
 
 append_source_block() {
   local shell_file="$1"
-  local marker="# fedora-glow-kit shell helpers"
+  local marker="# fedora-plasma-glow-kit shell helpers"
   mkdir -p "$(dirname "$shell_file")"
   touch "$shell_file"
   if grep -Fq "$marker" "$shell_file"; then
@@ -96,7 +105,7 @@ append_source_block() {
       printf '[ -f "$HOME/.config/shell/aliases.sh" ] && . "$HOME/.config/shell/aliases.sh"\n'
       # shellcheck disable=SC2016
       printf '[ -f "$HOME/.config/shell/functions.sh" ] && . "$HOME/.config/shell/functions.sh"\n'
-    } >> "$shell_file"
+    } >>"$shell_file"
     CHANGED+=("updated $shell_file")
     show_file_diff "$LAST_BACKUP_PATH" "$shell_file"
   else
@@ -110,6 +119,8 @@ else
   ui_warn "This script is intended for Fedora." 2>/dev/null || echo "This script is intended for Fedora." >&2
   ask "Continue anyway?" "n" || exit 1
 fi
+
+fedora_hardware_preflight
 
 MISSING_PKGS=()
 add_pkg_if_missing zsh zsh
@@ -206,8 +217,8 @@ find_firefox_profile() {
   [ -n "$rel" ] || rel="$(find "$root" -maxdepth 1 -type d -name '*default-release*' -printf '%f\n' 2>/dev/null | head -n 1)"
   [ -n "$rel" ] || return 1
   case "$rel" in
-    /*) printf '%s\n' "$rel" ;;
-    *) printf '%s/%s\n' "$root" "$rel" ;;
+  /*) printf '%s\n' "$rel" ;;
+  *) printf '%s/%s\n' "$root" "$rel" ;;
   esac
 }
 
@@ -285,6 +296,8 @@ fi
 echo
 ui_title "Summary" 2>/dev/null || echo "Summary"
 echo "Installed packages: ${INSTALLED[*]:-(none)}"
-printf 'Changed:\n'; printf '  - %s\n' "${CHANGED[@]:-(none)}"
-printf 'Skipped:\n'; printf '  - %s\n' "${SKIPPED[@]:-(none)}"
+printf 'Changed:\n'
+printf '  - %s\n' "${CHANGED[@]:-(none)}"
+printf 'Skipped:\n'
+printf '  - %s\n' "${SKIPPED[@]:-(none)}"
 echo "Restart your shell or run: exec \"\$SHELL\" -l"

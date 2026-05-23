@@ -9,14 +9,24 @@ SKIPPED=()
 # shellcheck disable=SC1091
 [ -f "$ROOT_DIR/shell/ui.sh" ] && . "$ROOT_DIR/shell/ui.sh"
 ui_intro 2>/dev/null || true
-ui_title "Fedora Glow Kit AI Tools" 2>/dev/null || echo "Fedora Glow Kit AI Tools"
+ui_title "Fedora Plasma Glow Kit AI Tools" 2>/dev/null || echo "Fedora Plasma Glow Kit AI Tools"
 
 ask() {
   local prompt="$1" default="${2:-n}" reply
+  case "${FEDORA_PLASMA_GLOW_ASSUME:-}" in
+  yes | YES | y | Y | true | TRUE | 1) return 0 ;;
+  no | NO | n | N | false | FALSE | 0) return 1 ;;
+  esac
   read -r -p "$prompt [$default] " reply || true
   reply="${reply:-$default}"
   [[ "$reply" =~ ^[Yy]$|^[Yy][Ee][Ss]$ ]]
 }
+
+# shellcheck source=/dev/null
+# shellcheck disable=SC1091
+[ -f "$ROOT_DIR/lib/preflight.sh" ] && . "$ROOT_DIR/lib/preflight.sh"
+
+fedora_hardware_preflight
 
 command_exists() {
   command -v "$1" >/dev/null 2>&1
@@ -25,7 +35,7 @@ command_exists() {
 record_state() {
   local key="$1" value="$2" state_dir="$HOME/.local/state/fedora-starter-kit"
   mkdir -p "$state_dir"
-  grep -Fqx "$key=$value" "$state_dir/install.state" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >> "$state_dir/install.state"
+  grep -Fqx "$key=$value" "$state_dir/install.state" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >>"$state_dir/install.state"
 }
 
 install_npm_global_if_missing() {
@@ -58,5 +68,7 @@ fi
 
 echo
 ui_title "AI Tools Summary" 2>/dev/null || echo "AI tools summary"
-printf 'Changed:\n'; printf '  - %s\n' "${CHANGED[@]:-(none)}"
-printf 'Skipped:\n'; printf '  - %s\n' "${SKIPPED[@]:-(none)}"
+printf 'Changed:\n'
+printf '  - %s\n' "${CHANGED[@]:-(none)}"
+printf 'Skipped:\n'
+printf '  - %s\n' "${SKIPPED[@]:-(none)}"

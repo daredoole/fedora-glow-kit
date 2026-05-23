@@ -1,0 +1,4 @@
+name = "privacy"
+description = "Security/privacy-centered setup without copying browser profiles, cookies, VPN state, or secrets."
+sections = ["core", "security"]
+risk = "low"
