@@ -1,0 +1,40 @@
+add_newline = true
+command_timeout = 1000
+
+format = """
+$directory$git_branch$git_status$cmd_duration
+$character"""
+
+[character]
+success_symbol = "[>](bold green)"
+error_symbol = "[>](bold red)"
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+style = "bold cyan"
+
+[git_branch]
+symbol = "git:"
+style = "bold purple"
+format = "[$symbol$branch]($style) "
+
+[git_status]
+style = "bold yellow"
+format = "[$all_status$ahead_behind]($style) "
+
+[cmd_duration]
+min_time = 1000
+format = "took [$duration](bold yellow) "
+
+[nodejs]
+format = "node [$version](green) "
+
+[python]
+format = "py [$version](green) "
+
+[golang]
+format = "go [$version](green) "
+
+[rust]
+format = "rs [$version](green) "

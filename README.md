@@ -1,0 +1,299 @@
+# Fedora Glow Kit
+
+Fedora Glow Kit is a safe, reusable Fedora starter kit built from a real Fedora KDE/Workstation setup. Its goal is to give a friend a polished Linux baseline: useful CLI tools, shell quality-of-life, terminal customization, Firefox privacy/performance settings, KDE theming, optional desktop apps, and optional developer utilities.
+
+It is intentionally conservative. Installers ask before changing configs, back up files before edits, skip existing theme assets, and avoid copying private data such as browser profiles, SSH keys, tokens, work aliases, VPN state, cookies, history, credentials, or machine-specific project paths.
+
+The installers are interactive. They prompt by section, such as packages, shell helpers, terminal configs, Firefox, KDE themes, KWin scripts, desktop apps, and extras. When an existing config file is changed, the script prints a unified diff immediately so you can see exactly what changed.
+
+Credits for bundled assets, optional extension installs, themes, and upstream tools are tracked in [CREDITS.md](CREDITS.md).
+
+## Quick Start
+
+Guided setup with install/revert/skip choices per section:
+
+```bash
+git clone https://github.com/<you>/fedora-glow-kit.git
+cd fedora-glow-kit
+bash manage.sh
+```
+
+If you are already inside the repo:
+
+```bash
+cd fedora-glow-kit
+bash manage.sh
+```
+
+Core install:
+
+```bash
+cd fedora-glow-kit
+bash install.sh
+```
+
+Optional extras:
+
+```bash
+cd fedora-glow-kit
+bash install-extras.sh
+```
+
+KDE customization:
+
+```bash
+cd fedora-glow-kit
+bash install-kde.sh
+```
+
+Security best-practice setup:
+
+```bash
+cd fedora-glow-kit
+bash install-security.sh
+```
+
+AI CLI tools:
+
+```bash
+cd fedora-glow-kit
+bash install-ai.sh
+```
+
+Revert kit-managed config changes:
+
+```bash
+cd fedora-glow-kit
+bash revert.sh
+```
+
+Public-readiness audit before sharing:
+
+```bash
+cd fedora-glow-kit
+bash scripts/audit-public.sh
+```
+
+Disable terminal animation or color:
+
+```bash
+FEDORA_STARTER_NO_ANIMATION=1 bash install.sh
+NO_COLOR=1 bash install.sh
+```
+
+## What It Does
+
+`install.sh` installs the core command-line setup and optional safe configs:
+
+- zsh, starship, zellij, fastfetch
+- ripgrep, fd, bat, eza, fzf, zoxide
+- jq, yq, btop, tree, tealdeer/tldr
+- git, GitHub CLI, git-delta, git-lfs
+- curl, wget, unzip, p7zip, rsync
+- nano, vim
+- Python, pip, pipx, uv
+- Podman, podman-compose, distrobox
+- direnv and just
+- Flatpak and optional Flathub setup
+- shell aliases/functions
+- optional Firefox `user.js`
+- optional Firefox extension policy
+- optional kitty, Konsole, starship, zellij, and fastfetch configs
+
+`install-extras.sh` installs optional heavier tools and app groups:
+
+- Neovim, micro, kitty, WezTerm, lazygit
+- lightweight quick editors: KWrite, FeatherPad, GNOME Text Editor, and micro
+- Go, Rust, Docker Compose
+- nvtop, iotop, sysstat, VAAPI/VDPAU tools
+- terminal art tools like cmatrix, asciiquarium, pipes, cbonsai, fortune, cowsay, lolcat, figlet, toilet, nyancat, sl, and tty-clock
+- optional RPM Fusion repositories
+- optional media codecs and Mesa VAAPI/VDPAU packages
+- optional Bluetooth headphone codec/support packages
+- optional Flatpak groups for daily apps, gaming/media, messaging/social, and advanced/privacy/dev tools
+
+The recommended simple editor path is KWrite plus FeatherPad. They open quickly, support syntax highlighting and themes, and are better suited for quick config edits than a full IDE. The shell helper `qedit FILE` opens KWrite first, then FeatherPad, then GNOME Text Editor, then falls back to `$EDITOR`.
+
+`install-kde.sh` installs KDE desktop customization:
+
+- kdeplasma-addons
+- papirus-icon-theme
+- variety
+- qt6-qttools
+- Plasma taskbar/widget support packages
+- KDE Connect tray integration
+- Bluedevil Bluetooth tray support
+- optional Bluetooth/headphone codec support
+- downloaded KDE themes from `configs/kde/themes`
+- optional third-party KWin Rounded Corners effect through `matinlotfali/KDE-Rounded-Corners`, off by default
+- KDE animation speed factor `0.35`
+- optional NetworkManager wait-online disable prompt for faster boots
+- optional Plasma panel launcher-centering fix: left widgets stay left, Icon Tasks are centered between spacers, tray/clock stay right
+- optional bundled Panel Colorizer widget install, skipped when already present
+- optional Panel Colorizer tuning for transparent empty spacers, larger colorized widget margins, and translucent island borders/backgrounds
+- optional Sweet-Dark-transparent Aurorae window decoration
+- detected KWin plugin enablement for `krohnkite`, `rememberwindowpositions`, and `endtask-modern`
+- reviewed KWin script packages placed under `configs/kde/kwin-scripts/<script-id>/`
+- optional recommended KDE hotkeys after showing the shortcut list for review
+
+`install-security.sh` installs and configures opt-in Fedora security basics:
+
+- firewalld
+- SELinux tooling and troubleshooting utilities
+- fwupd firmware update timer
+- optional dnf-automatic timer
+- optional USBGuard policy generation for manual review
+
+It does not silently enable disruptive USB blocking or firewall lockdowns.
+
+`install-ai.sh` installs opt-in AI terminal tools:
+
+- OpenAI Codex CLI via `npm install -g @openai/codex`
+- Anthropic Claude Code via `npm install -g @anthropic-ai/claude-code`
+- Hermes only through a user-provided `HERMES_INSTALL_COMMAND`, because no trusted local Hermes package was detected
+
+No AI API keys, account files, tokens, prompts, histories, or tool state are copied.
+
+`manage.sh` runs the sections in a sensible order and asks what to do at each step:
+
+- Space or Enter: install/setup that section
+- `r`: revert/uninstall kit-managed changes for that section
+- `s`: skip that section
+- `q`: quit
+
+`revert.sh` restores config backups or removes config files that still match the kit copy. It only prompts to uninstall DNF, Flatpak, npm, and COPR entries recorded as installed or enabled by this kit, so it avoids removing tools the user already had.
+
+Future installs record kit-installed DNF, Flatpak, and npm AI packages in:
+
+```bash
+~/.local/state/fedora-starter-kit/install.state
+```
+
+Revert/uninstall prompts only target those recorded packages.
+
+## Included Configs
+
+- `shell/aliases.sh`
+- `shell/functions.sh`
+- `shell/ui.sh`
+- `configs/zshrc.sample`
+- `configs/starship.toml`
+- `configs/zellij/config.kdl`
+- `configs/fastfetch/config.jsonc`
+- `configs/fastfetch/dog.png`
+- `configs/firefox/user.js`
+- `configs/firefox/policies.json`
+- `configs/kitty/kitty.conf`
+- `configs/kitty/current-theme.conf`
+- `configs/konsole/FedoraStarter.profile`
+- `configs/konsole/Sweet-Starter.colorscheme`
+- `configs/kde/themes`
+- `configs/kde/kwin-enabled.conf`
+- `configs/kde/recommended-hotkeys.md`
+- `configs/kde/panel-layout-notes.md`
+
+## KDE Themes
+
+Downloaded non-default themes included:
+
+- Plasma: Layan, Orchis-dark, Sweet, Sweet-Ambar-Blue
+- Look and feel: Orchis dark
+- Color schemes: Orchis, OrchisDark, Sweet, SweetAmbarBlue
+- Aurorae decorations: Orchis variants and Sweet variants
+- Icons: Papirus through Fedora packages. Large downloaded icon packs are documented but not bundled to keep the public repo small.
+- Wallpapers: Orchis
+
+Theme install is non-destructive: existing target paths are skipped, not overwritten.
+
+Panel/taskbar layout files are not copied because Plasma panel config is monitor and user specific. The kit installs useful widget support instead: Icon Tasks, KDE Connect, Bluetooth/Bluedevil, media/volume, clipboard, device notifier, weather support, activity pager, Panel Colorizer, and KDE add-ons.
+
+The KDE installer includes an optional Panel Colorizer pass. It does not copy a full personal panel layout. It makes empty spacer widgets transparent, increases colorized widget island spacing/margins so icons are not tight against rounded borders, softens island opacity/borders, and keeps the center Icon Tasks launcher icons full size with a narrower vertical margin override.
+
+The optional Rounded Corners effect uses a third-party COPR. The installer shows the COPR name and package before enabling it, defaults to no, and records the repo only if this kit enabled it.
+
+The KDE installer can optionally disable `NetworkManager-wait-online.service`. This may reduce boot waiting, but it is off by default because it can affect services that explicitly wait for network-online at boot.
+
+## Firefox
+
+`configs/firefox/user.js` contains sanitized portable Firefox preferences for performance, reduced speculative network activity, hardware video acceleration, privacy controls, telemetry reduction, and UI quality-of-life.
+
+`configs/firefox/policies.json` installs public enabled extensions through Firefox enterprise policy using `normal_installed`, so the user can disable or remove them. It does not include extension settings, extension storage, accounts, passwords, cookies, history, sync state, or browser profile data.
+
+## Safety
+
+The scripts are designed to be idempotent and non-destructive:
+
+- already-installed commands are skipped
+- existing dotfiles are backed up before replacement
+- most config writes require confirmation
+- config changes show a unified diff as they happen
+- new files are reported as created
+- existing KDE theme paths are skipped
+- existing KWin scripts are skipped
+- KWin script directories are not bundled unless deliberately reviewed and placed in the kit
+- third-party COPR repositories are opt-in and clearly labeled before enablement
+- RPM Fusion Mesa packages use `--skip-unavailable` because Fedora/RPM Fusion Mesa versions can temporarily mismatch
+- bundled third-party assets are credited in `CREDITS.md`; assets without clear source/license metadata are excluded from the public repo
+
+## Credits And License
+
+See `CREDITS.md` for expanded attribution covering bundled KDE assets, Panel Colorizer, Firefox extensions, optional third-party repositories, and recommended upstream tools.
+
+The starter-kit scripts and sanitized sample configs are MIT licensed. Bundled or referenced third-party assets keep their own upstream licenses; see `LICENSE.md` and `CREDITS.md`.
+
+## Security Best Practices
+
+This kit keeps the security defaults strong without making the system annoying:
+
+- keep SELinux enforcing
+- keep firewalld enabled on the public zone unless the user knowingly changes it
+- use fwupd for firmware update checks
+- use Flatpak permissions intentionally, with Flatseal/Warehouse available for review
+- use a password manager instead of syncing secrets in dotfiles
+- avoid copying browser profiles, cookies, extension storage, SSH keys, VPN state, and Git credentials
+- use USBGuard only after reviewing the generated policy, because enabling it blindly can block legitimate devices
+- use dnf-automatic as a timer only if the user wants automated update checks/download policy
+
+Fedora documents firewalld and SELinux as core security layers, and Fedora’s dnf-automatic documentation describes timer-based automatic update workflows. KDE stores global shortcuts in user config and exposes shortcut management through System Settings.
+
+## Undo
+
+Remove installed config files:
+
+```bash
+rm -f ~/.config/shell/aliases.sh
+rm -f ~/.config/shell/functions.sh
+rm -f ~/.config/starship.toml
+rm -f ~/.config/zellij/config.kdl
+rm -f ~/.config/fastfetch/config.jsonc
+rm -f ~/.mozilla/firefox/*.default-release/user.js
+sudo rm -f /etc/firefox/policies/policies.json
+rm -f ~/.config/kitty/kitty.conf
+rm -f ~/.config/kitty/current-theme.conf
+rm -f ~/.local/share/konsole/FedoraStarter.profile
+rm -f ~/.local/share/konsole/Sweet-Starter.colorscheme
+```
+
+Restore a backup created by the installer:
+
+```bash
+ls -la ~/.zshrc.bak.* ~/.bashrc.bak.* ~/.config/starship.toml.bak.* 2>/dev/null
+mv ~/.zshrc.bak.YYYYMMDD-HHMMSS ~/.zshrc
+```
+
+Undo KDE animation speed:
+
+```bash
+kwriteconfig6 --file kdeglobals --group KDE --key AnimationDurationFactor 1.0
+qdbus org.kde.KWin /KWin reconfigure
+```
+
+Remove packages manually:
+
+```bash
+sudo dnf remove PACKAGE_NAME
+```
+
+## Privacy Notes
+
+This kit intentionally does not copy SSH keys, Git credentials, browser profiles, browser history, cookies, extension storage, VPN/Tailscale configs, private aliases, project paths, hostnames, tokens, or exact personal dotfiles. See `EXCLUDED_PRIVATE_ITEMS.md`.

@@ -1,0 +1,18 @@
+*.bak.*
+*.swp
+*.tmp
+.DS_Store
+
+# Local state and generated files
+.cache/
+.local-state/
+install.state
+icon-theme.cache
+
+# Do not accidentally commit personal browser/profile or credential material.
+.env
+*.pem
+*.key
+*token*
+*secret*
+*credential*

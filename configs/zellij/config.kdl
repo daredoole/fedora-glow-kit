@@ -1,0 +1,15 @@
+show_startup_tips false
+pane_frames false
+copy_on_select true
+default_layout "compact"
+
+keybinds clear-defaults=false {
+    normal {
+        bind "Alt h" { MoveFocus "Left"; }
+        bind "Alt j" { MoveFocus "Down"; }
+        bind "Alt k" { MoveFocus "Up"; }
+        bind "Alt l" { MoveFocus "Right"; }
+        bind "Alt n" { NewPane; }
+        bind "Alt x" { CloseFocus; }
+    }
+}
