@@ -61,8 +61,8 @@ check "no private key or credential-shaped files" \
   test -z "$(find "$ROOT_DIR" \
     -path "$ROOT_DIR/.git" -prune -o \
     -type f \( \
-      -iname 'id_rsa' -o -iname 'id_ed25519' -o -iname '*.pem' -o -iname '*.key' -o \
-      -iname '.env' -o -iname '*token*' -o -iname '*secret*' -o -iname '*credential*' \
+    -iname 'id_rsa' -o -iname 'id_ed25519' -o -iname '*.pem' -o -iname '*.key' -o \
+    -iname '.env' -o -iname '*token*' -o -iname '*secret*' -o -iname '*credential*' \
     \) -print -quit)"
 
 if command -v rg >/dev/null 2>&1; then

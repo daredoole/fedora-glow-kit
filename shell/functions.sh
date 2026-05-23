@@ -12,32 +12,35 @@ extract() {
   fi
 
   case "$1" in
-    *.tar.bz2) tar xjf "$1" ;;
-    *.tar.gz) tar xzf "$1" ;;
-    *.tar.xz) tar xJf "$1" ;;
-    *.tar) tar xf "$1" ;;
-    *.tbz2) tar xjf "$1" ;;
-    *.tgz) tar xzf "$1" ;;
-    *.zip) unzip "$1" ;;
-    *.7z) 7z x "$1" ;;
-    *.gz) gunzip "$1" ;;
-    *) printf 'extract: unsupported archive: %s\n' "$1" >&2; return 1 ;;
+  *.tar.bz2) tar xjf "$1" ;;
+  *.tar.gz) tar xzf "$1" ;;
+  *.tar.xz) tar xJf "$1" ;;
+  *.tar) tar xf "$1" ;;
+  *.tbz2) tar xjf "$1" ;;
+  *.tgz) tar xzf "$1" ;;
+  *.zip) unzip "$1" ;;
+  *.7z) 7z x "$1" ;;
+  *.gz) gunzip "$1" ;;
+  *)
+    printf 'extract: unsupported archive: %s\n' "$1" >&2
+    return 1
+    ;;
   esac
 }
 
 path_prepend() {
   [ -d "$1" ] || return 0
   case ":$PATH:" in
-    *":$1:"*) ;;
-    *) export PATH="$1:$PATH" ;;
+  *":$1:"*) ;;
+  *) export PATH="$1:$PATH" ;;
   esac
 }
 
 path_append() {
   [ -d "$1" ] || return 0
   case ":$PATH:" in
-    *":$1:"*) ;;
-    *) export PATH="$PATH:$1" ;;
+  *":$1:"*) ;;
+  *) export PATH="$PATH:$1" ;;
   esac
 }
 

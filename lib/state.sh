@@ -16,7 +16,7 @@ migrate_legacy_state() {
 record_state() {
   local key="$1" value="$2"
   migrate_legacy_state
-  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >> "$STATE_FILE"
+  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >>"$STATE_FILE"
 }
 
 state_values() {

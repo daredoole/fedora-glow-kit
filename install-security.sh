@@ -17,8 +17,8 @@ ui_title "Fedora Plasma Glow Kit Security" 2>/dev/null || echo "Fedora Plasma Gl
 ask() {
   local prompt="$1" default="${2:-n}" reply
   case "${FEDORA_PLASMA_GLOW_ASSUME:-}" in
-    yes|YES|y|Y|true|TRUE|1) return 0 ;;
-    no|NO|n|N|false|FALSE|0) return 1 ;;
+  yes | YES | y | Y | true | TRUE | 1) return 0 ;;
+  no | NO | n | N | false | FALSE | 0) return 1 ;;
   esac
   read -r -p "$prompt [$default] " reply || true
   reply="${reply:-$default}"
@@ -32,7 +32,7 @@ command_exists() {
 record_state() {
   local key="$1" value="$2"
   mkdir -p "$STATE_DIR"
-  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >> "$STATE_FILE"
+  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >>"$STATE_FILE"
 }
 
 install_security_packages() {
@@ -47,9 +47,15 @@ install_security_packages() {
 }
 
 ui_section "Current posture" 2>/dev/null || true
-command_exists getenforce && ui_info "SELinux: $(getenforce)" 2>/dev/null || true
-command_exists firewall-cmd && ui_info "firewalld: $(firewall-cmd --state 2>/dev/null || echo unavailable)" 2>/dev/null || true
-command_exists firewall-cmd && ui_info "firewalld zone: $(firewall-cmd --get-default-zone 2>/dev/null || echo unknown)" 2>/dev/null || true
+if command_exists getenforce; then
+  ui_info "SELinux: $(getenforce)" 2>/dev/null || true
+fi
+if command_exists firewall-cmd; then
+  ui_info "firewalld: $(firewall-cmd --state 2>/dev/null || echo unavailable)" 2>/dev/null || true
+fi
+if command_exists firewall-cmd; then
+  ui_info "firewalld zone: $(firewall-cmd --get-default-zone 2>/dev/null || echo unknown)" 2>/dev/null || true
+fi
 
 if ask "Install practical Fedora security tools?" "y"; then
   install_security_packages
@@ -89,5 +95,7 @@ fi
 
 echo
 ui_title "Security Summary" 2>/dev/null || echo "Security summary"
-printf 'Changed:\n'; printf '  - %s\n' "${CHANGED[@]:-(none)}"
-printf 'Skipped:\n'; printf '  - %s\n' "${SKIPPED[@]:-(none)}"
+printf 'Changed:\n'
+printf '  - %s\n' "${CHANGED[@]:-(none)}"
+printf 'Skipped:\n'
+printf '  - %s\n' "${SKIPPED[@]:-(none)}"

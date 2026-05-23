@@ -39,15 +39,31 @@ USAGE
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    --dry-run) DRY_RUN=1 ;;
-    --yes) ASSUME="yes" ;;
-    --no) ASSUME="no" ;;
-    --profile) PROFILE="${2:-}"; shift ;;
-    --section) SECTION="${2:-}"; shift ;;
-    --revert) REVERT_SECTION="${2:-}"; shift ;;
-    --audit) RUN_AUDIT=1 ;;
-    -h|--help) usage; exit 0 ;;
-    *) printf 'Unknown option: %s\n\n' "$1" >&2; usage; exit 1 ;;
+  --dry-run) DRY_RUN=1 ;;
+  --yes) ASSUME="yes" ;;
+  --no) ASSUME="no" ;;
+  --profile)
+    PROFILE="${2:-}"
+    shift
+    ;;
+  --section)
+    SECTION="${2:-}"
+    shift
+    ;;
+  --revert)
+    REVERT_SECTION="${2:-}"
+    shift
+    ;;
+  --audit) RUN_AUDIT=1 ;;
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  *)
+    printf 'Unknown option: %s\n\n' "$1" >&2
+    usage
+    exit 1
+    ;;
   esac
   shift
 done
@@ -56,7 +72,8 @@ ui_intro 2>/dev/null || true
 ui_title "Fedora Plasma Glow Kit Guided Setup" 2>/dev/null || echo "Fedora Plasma Glow Kit Guided Setup"
 
 run_cmd() {
-  local label="$1"; shift
+  local label="$1"
+  shift
   printf '\n'
   ui_section "$label" 2>/dev/null || echo "$label"
   if [ "$DRY_RUN" -eq 1 ]; then
@@ -70,27 +87,33 @@ run_cmd() {
 
 run_section_by_id() {
   case "$1" in
-    core) run_cmd "Core CLI and Shell" bash "$ROOT_DIR/install.sh" ;;
-    extras) run_cmd "Optional Apps and Extras" bash "$ROOT_DIR/install-extras.sh" ;;
-    kde) run_cmd "KDE Plasma Customization" bash "$ROOT_DIR/install-kde.sh" ;;
-    ai) run_cmd "AI CLI Tools" bash "$ROOT_DIR/install-ai.sh" ;;
-    security) run_cmd "Security Best Practices" bash "$ROOT_DIR/install-security.sh" ;;
-    *) printf 'Unknown section: %s\n' "$1" >&2; exit 1 ;;
+  core) run_cmd "Core CLI and Shell" bash "$ROOT_DIR/install.sh" ;;
+  extras) run_cmd "Optional Apps and Extras" bash "$ROOT_DIR/install-extras.sh" ;;
+  kde) run_cmd "KDE Plasma Customization" bash "$ROOT_DIR/install-kde.sh" ;;
+  ai) run_cmd "AI CLI Tools" bash "$ROOT_DIR/install-ai.sh" ;;
+  security) run_cmd "Security Best Practices" bash "$ROOT_DIR/install-security.sh" ;;
+  *)
+    printf 'Unknown section: %s\n' "$1" >&2
+    exit 1
+    ;;
   esac
 }
 
 profile_sections() {
   case "$1" in
-    minimal) printf '%s\n' core security ;;
-    daily) printf '%s\n' core extras kde security ;;
-    dev) printf '%s\n' core extras ai security ;;
-    kde-polish) printf '%s\n' kde ;;
-    media) printf '%s\n' core extras kde ;;
-    gaming) printf '%s\n' core extras kde ;;
-    privacy) printf '%s\n' core security ;;
-    ai) printf '%s\n' core ai ;;
-    full-send) printf '%s\n' core extras kde ai security ;;
-    *) printf 'Unknown profile: %s\n' "$1" >&2; exit 1 ;;
+  minimal) printf '%s\n' core security ;;
+  daily) printf '%s\n' core extras kde security ;;
+  dev) printf '%s\n' core extras ai security ;;
+  kde-polish) printf '%s\n' kde ;;
+  media) printf '%s\n' core extras kde ;;
+  gaming) printf '%s\n' core extras kde ;;
+  privacy) printf '%s\n' core security ;;
+  ai) printf '%s\n' core ai ;;
+  full-send) printf '%s\n' core extras kde ai security ;;
+  *)
+    printf 'Unknown profile: %s\n' "$1" >&2
+    exit 1
+    ;;
   esac
 }
 
@@ -107,11 +130,14 @@ choose_action() {
   IFS= read -r -n 1 key || true
   printf '\n'
   case "${key:- }" in
-    ""|" ") return 0 ;;
-    r|R) return 1 ;;
-    s|S) return 2 ;;
-    q|Q) exit 0 ;;
-    *) ui_warn "Unknown choice; skipping $title" 2>/dev/null || true; return 2 ;;
+  "" | " ") return 0 ;;
+  r | R) return 1 ;;
+  s | S) return 2 ;;
+  q | Q) exit 0 ;;
+  *)
+    ui_warn "Unknown choice; skipping $title" 2>/dev/null || true
+    return 2
+    ;;
   esac
 }
 
@@ -121,8 +147,8 @@ interactive_section() {
     run_section_by_id "$id"
   else
     case "$?" in
-      1) run_cmd "Revert $id" bash "$ROOT_DIR/revert.sh" "$id" ;;
-      2) ui_info "Skipped $title" 2>/dev/null || true ;;
+    1) run_cmd "Revert $id" bash "$ROOT_DIR/revert.sh" "$id" ;;
+    2) ui_info "Skipped $title" 2>/dev/null || true ;;
     esac
   fi
 }

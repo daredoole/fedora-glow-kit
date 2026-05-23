@@ -17,8 +17,8 @@ ui_title "Fedora Plasma Glow Kit Extras" 2>/dev/null || echo "Fedora Plasma Glow
 ask() {
   local prompt="$1" default="${2:-n}" reply
   case "${FEDORA_PLASMA_GLOW_ASSUME:-}" in
-    yes|YES|y|Y|true|TRUE|1) return 0 ;;
-    no|NO|n|N|false|FALSE|0) return 1 ;;
+  yes | YES | y | Y | true | TRUE | 1) return 0 ;;
+  no | NO | n | N | false | FALSE | 0) return 1 ;;
   esac
   read -r -p "$prompt [$default] " reply || true
   reply="${reply:-$default}"
@@ -32,7 +32,7 @@ command_exists() {
 record_state() {
   local key="$1" value="$2"
   mkdir -p "$STATE_DIR"
-  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >> "$STATE_FILE"
+  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >>"$STATE_FILE"
 }
 
 install_dnf() {
@@ -179,5 +179,7 @@ fi
 
 echo
 ui_title "Extras Summary" 2>/dev/null || echo "Extras summary"
-printf 'Changed:\n'; printf '  - %s\n' "${CHANGED[@]:-(none)}"
-printf 'Skipped:\n'; printf '  - %s\n' "${SKIPPED[@]:-(none)}"
+printf 'Changed:\n'
+printf '  - %s\n' "${CHANGED[@]:-(none)}"
+printf 'Skipped:\n'
+printf '  - %s\n' "${SKIPPED[@]:-(none)}"
