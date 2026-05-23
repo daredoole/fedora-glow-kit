@@ -408,11 +408,15 @@ $cUsedGB = [math]::Round($cSizeGB - $cFreeGB, 2)
 
 Add-Check "C Drive Size" "OK" "Size=$cSizeGB GB, Used=$cUsedGB GB, Free=$cFreeGB GB."
 
+$requiredFreeGB = $FedoraSpaceGB + $MinimumWindowsFreeAfterShrinkGB
+$windowsFreeAfterRequestedShrinkGB = [math]::Round($cFreeGB - $FedoraSpaceGB, 2)
+$maxFedoraForReserveGB = [math]::Max(0, [math]::Round($cFreeGB - $MinimumWindowsFreeAfterShrinkGB, 2))
+
 if ($cFreeGB -lt ($FedoraSpaceGB + $MinimumWindowsFreeAfterShrinkGB)) {
-    Add-Check "Free Space" "BLOCKER" "Need at least $($FedoraSpaceGB + $MinimumWindowsFreeAfterShrinkGB) GB free to give Fedora $FedoraSpaceGB GB and leave Windows $MinimumWindowsFreeAfterShrinkGB GB free. Current free: $cFreeGB GB."
+    Add-Check "Free Space" "BLOCKER" "Requested Fedora space is $FedoraSpaceGB GB plus a Windows free-space reserve of $MinimumWindowsFreeAfterShrinkGB GB, so this plan needs $requiredFreeGB GB free before shrinking. Current free is $cFreeGB GB. Shrinking by $FedoraSpaceGB GB would leave Windows about $windowsFreeAfterRequestedShrinkGB GB free. With this reserve, the max Fedora allocation from current free space is about $maxFedoraForReserveGB GB."
 }
 else {
-    Add-Check "Free Space" "OK" "Enough free space for requested Fedora allocation and Windows reserve."
+    Add-Check "Free Space" "OK" "Enough free space for $FedoraSpaceGB GB Fedora allocation while leaving about $windowsFreeAfterRequestedShrinkGB GB free for Windows."
 }
 
 try {
