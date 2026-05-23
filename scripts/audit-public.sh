@@ -22,13 +22,13 @@ check() {
 section "Shell syntax"
 while IFS= read -r script; do
   check "bash -n ${script#"$ROOT_DIR"/}" bash -n "$script"
-done < <(find "$ROOT_DIR" -maxdepth 2 -type f -name '*.sh' | sort)
+done < <(find "$ROOT_DIR" -maxdepth 2 -path "$ROOT_DIR/.git" -prune -o -type f -name '*.sh' -print | sort)
 
 section "ShellCheck"
 if command -v shellcheck >/dev/null 2>&1; then
   while IFS= read -r script; do
     check "shellcheck ${script#"$ROOT_DIR"/}" shellcheck "$script"
-  done < <(find "$ROOT_DIR" -maxdepth 2 -type f -name '*.sh' | sort)
+  done < <(find "$ROOT_DIR" -maxdepth 2 -path "$ROOT_DIR/.git" -prune -o -type f -name '*.sh' -print | sort)
 else
   printf '[WARN] shellcheck not installed; skipping\n'
 fi
@@ -38,21 +38,21 @@ LOCAL_USER="$(id -un 2>/dev/null || true)"
 check "credits file exists" test -f "$ROOT_DIR/CREDITS.md"
 check "license file exists" test -f "$ROOT_DIR/LICENSE.md"
 check "no private key or credential-shaped files" \
-  test -z "$(find "$ROOT_DIR" -type f \( \
+  test -z "$(find "$ROOT_DIR" -path "$ROOT_DIR/.git" -prune -o -type f \( \
     -iname 'id_rsa' -o -iname 'id_ed25519' -o -iname '*.pem' -o -iname '*.key' -o \
     -iname '.env' -o -iname '*token*' -o -iname '*secret*' -o -iname '*credential*' \
   \) -print -quit)"
 
 if [ -n "$LOCAL_USER" ]; then
   check "no local user paths or current username" \
-    bash -c "cd '$ROOT_DIR' && ! rg -n --hidden --glob '!configs/kde/themes/**' --glob '!configs/kde/plasmoids/**' --glob '!*.png' '/home/[A-Za-z0-9_-]+|${LOCAL_USER}' ."
+    bash -c "cd '$ROOT_DIR' && ! rg -n --hidden --glob '!.git/**' --glob '!configs/kde/themes/**' --glob '!configs/kde/plasmoids/**' --glob '!*.png' '/home/[A-Za-z0-9_-]+|${LOCAL_USER}' ."
 else
   check "no local user paths" \
-    bash -c "cd '$ROOT_DIR' && ! rg -n --hidden --glob '!configs/kde/themes/**' --glob '!configs/kde/plasmoids/**' --glob '!*.png' '/home/[A-Za-z0-9_-]+' ."
+    bash -c "cd '$ROOT_DIR' && ! rg -n --hidden --glob '!.git/**' --glob '!configs/kde/themes/**' --glob '!configs/kde/plasmoids/**' --glob '!*.png' '/home/[A-Za-z0-9_-]+' ."
 fi
 
 check "no generated icon theme caches" \
-  test -z "$(find "$ROOT_DIR" -type f -name 'icon-theme.cache' -print -quit)"
+  test -z "$(find "$ROOT_DIR" -path "$ROOT_DIR/.git" -prune -o -type f -name 'icon-theme.cache' -print -quit)"
 
 check "uncredited staged theme assets are absent" \
   test -z "$(find "$ROOT_DIR/configs/kde/themes" \( -name 'Tokyo Night.colors' -o -name 'Sweet-Wallpapers' \) -print -quit)"
