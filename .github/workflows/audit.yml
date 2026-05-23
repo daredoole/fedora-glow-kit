@@ -1,0 +1,30 @@
+name: Audit
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-audit:
+    name: Public audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install shellcheck and ripgrep
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck ripgrep
+
+      - name: Run public audit
+        run: bash scripts/audit-public.sh

@@ -176,6 +176,7 @@ if ask "Install terminal prompt, zellij, and fastfetch configs?" "y"; then
   install_file "$ROOT_DIR/configs/starship.toml" "$HOME/.config/starship.toml"
   install_file "$ROOT_DIR/configs/zellij/config.kdl" "$HOME/.config/zellij/config.kdl"
   install_file "$ROOT_DIR/configs/fastfetch/config.jsonc" "$HOME/.config/fastfetch/config.jsonc"
+  install_file "$ROOT_DIR/configs/fastfetch/dog_transparent.png" "$HOME/.config/fastfetch/dog_transparent.png"
   install_file "$ROOT_DIR/configs/fastfetch/dog.png" "$HOME/.config/fastfetch/dog.png"
 else
   SKIPPED+=("terminal prompt/zellij/fastfetch configs")

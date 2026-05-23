@@ -91,6 +91,7 @@ revert_core() {
   remove_if_matches "$ROOT_DIR/configs/starship.toml" "$HOME/.config/starship.toml"
   remove_if_matches "$ROOT_DIR/configs/zellij/config.kdl" "$HOME/.config/zellij/config.kdl"
   remove_if_matches "$ROOT_DIR/configs/fastfetch/config.jsonc" "$HOME/.config/fastfetch/config.jsonc"
+  remove_if_matches "$ROOT_DIR/configs/fastfetch/dog_transparent.png" "$HOME/.config/fastfetch/dog_transparent.png"
   remove_if_matches "$ROOT_DIR/configs/fastfetch/dog.png" "$HOME/.config/fastfetch/dog.png"
   restore_latest_backup "$HOME/.zshrc"
   [ -f "$HOME/.bashrc" ] && restore_latest_backup "$HOME/.bashrc"

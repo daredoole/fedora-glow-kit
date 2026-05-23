@@ -37,6 +37,10 @@ section "Public safety scan"
 LOCAL_USER="$(id -un 2>/dev/null || true)"
 check "credits file exists" test -f "$ROOT_DIR/CREDITS.md"
 check "license file exists" test -f "$ROOT_DIR/LICENSE.md"
+check "security policy exists" test -f "$ROOT_DIR/SECURITY.md"
+check "audit workflow exists" test -f "$ROOT_DIR/.github/workflows/audit.yml"
+check "dependabot config exists" test -f "$ROOT_DIR/.github/dependabot.yml"
+check "code owners file exists" test -f "$ROOT_DIR/.github/CODEOWNERS"
 check "no private key or credential-shaped files" \
   test -z "$(find "$ROOT_DIR" -path "$ROOT_DIR/.git" -prune -o -type f \( \
     -iname 'id_rsa' -o -iname 'id_ed25519' -o -iname '*.pem' -o -iname '*.key' -o \

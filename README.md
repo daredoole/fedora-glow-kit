@@ -74,6 +74,12 @@ cd fedora-glow-kit
 bash scripts/audit-public.sh
 ```
 
+Security policy:
+
+```bash
+less SECURITY.md
+```
+
 Disable terminal animation or color:
 
 ```bash
@@ -181,6 +187,7 @@ Revert/uninstall prompts only target those recorded packages.
 - `configs/zellij/config.kdl`
 - `configs/fastfetch/config.jsonc`
 - `configs/fastfetch/dog.png`
+- `configs/fastfetch/dog_transparent.png`
 - `configs/firefox/user.js`
 - `configs/firefox/policies.json`
 - `configs/kitty/kitty.conf`
@@ -240,6 +247,13 @@ The scripts are designed to be idempotent and non-destructive:
 See `CREDITS.md` for expanded attribution covering bundled KDE assets, Panel Colorizer, Firefox extensions, optional third-party repositories, and recommended upstream tools.
 
 The starter-kit scripts and sanitized sample configs are MIT licensed. Bundled or referenced third-party assets keep their own upstream licenses; see `LICENSE.md` and `CREDITS.md`.
+
+The public repo also includes GitHub hardening files:
+
+- `.github/workflows/audit.yml` runs the public audit on pushes and pull requests.
+- `.github/dependabot.yml` checks GitHub Actions updates weekly.
+- `.github/CODEOWNERS` requires owner review when branch protection is enabled.
+- `SECURITY.md` documents private vulnerability reporting and supply-chain contribution rules.
 
 ## Security Best Practices
 

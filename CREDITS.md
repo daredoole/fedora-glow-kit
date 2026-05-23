@@ -32,7 +32,7 @@ The previously staged `Tokyo Night.colors` and `Sweet-Wallpapers` assets were re
 | Kitty config | Built for this kit using Kitty: https://github.com/kovidgoyal/kitty |
 | Konsole profile/colors | Built for this kit; color choices are visually aligned with the credited Sweet theme family |
 
-The `configs/fastfetch/dog.png` image is a local starter-kit asset used for the sample Fastfetch layout. No third-party image source metadata is present in the repository.
+The `configs/fastfetch/dog.png` and `configs/fastfetch/dog_transparent.png` images are local starter-kit assets used for the sample Fastfetch layout. No third-party image source metadata is present in the repository.
 
 ## Firefox Extensions
 

@@ -66,8 +66,12 @@ qedit() {
 }
 
 ffz() {
-  if [ -f "$HOME/.config/fastfetch/dog.png" ]; then
-    fastfetch --logo "$HOME/.config/fastfetch/dog.png" --logo-type file --logo-width 42 --logo-height 20 --logo-preserve-aspect-ratio true --logo-padding-left 4 --logo-padding-right 4 "$@"
+  if [ -f "$HOME/.config/fastfetch/dog_transparent.png" ]; then
+    clear
+    fastfetch --sixel "$HOME/.config/fastfetch/dog_transparent.png" --logo-width 42 --logo-height 20 --logo-padding-top 10 --logo-padding-left 4 --logo-padding-right 4 "$@"
+  elif [ -f "$HOME/.config/fastfetch/dog.png" ]; then
+    clear
+    fastfetch --sixel "$HOME/.config/fastfetch/dog.png" --logo-width 42 --logo-height 20 --logo-padding-top 10 --logo-padding-left 4 --logo-padding-right 4 "$@"
   else
     fastfetch "$@"
   fi
