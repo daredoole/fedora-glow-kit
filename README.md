@@ -125,7 +125,15 @@ Set-ExecutionPolicy -Scope Process Bypass -Force
 .\scripts\windows\Fedora-DualBoot-Preflight.ps1 -FedoraSpaceGB 120
 ```
 
+To also export supported Windows browser bookmarks as HTML files for import on Fedora:
+
+```powershell
+.\scripts\windows\Fedora-DualBoot-Preflight.ps1 -FedoraSpaceGB 120 -ExportBrowserBookmarks
+```
+
 The script checks admin rights, GPT/UEFI layout, BitLocker, Fast Startup, free space, recovery partitions, and the Windows-supported shrink range. It does not resize the disk or change Windows settings; if the checks pass, it prints the `Resize-Partition` command to run manually after backups and recovery-key prep.
+
+Bookmark export is opt-in. It exports Chrome, Edge, Brave, and Vivaldi bookmark HTML files only; it does not copy browser profiles, cookies, passwords, sessions, history, Sync state, or extension data. In Fedora Firefox, import the HTML file with Bookmarks > Manage bookmarks > Import and Backup > Import Bookmarks from HTML.
 
 ## Package Source Policy
 
