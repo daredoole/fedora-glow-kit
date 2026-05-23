@@ -1,6 +1,6 @@
 # Credits
 
-Fedora Glow Kit is a curated installer and configuration wrapper. It does not claim ownership of the upstream tools, themes, extensions, or artwork it installs or bundles. Third-party projects keep their own authorship, licenses, trademarks, and update channels.
+Fedora Plasma Glow Kit is a curated installer and configuration wrapper. It does not claim ownership of the upstream tools, themes, extensions, or artwork it installs or bundles. Third-party projects keep their own authorship, licenses, trademarks, and update channels.
 
 This file credits bundled assets and opt-in upstream installs. When local metadata provides an author, license, or repository, it is listed. When this kit only has an install source, the official project or listing is linked.
 

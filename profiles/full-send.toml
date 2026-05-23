@@ -1,0 +1,4 @@
+name = "full-send"
+description = "Everything. Still prompts before risky third-party or destructive actions unless --yes is supplied."
+sections = ["core", "extras", "kde", "ai", "security"]
+risk = "high"

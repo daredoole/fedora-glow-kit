@@ -1,0 +1,4 @@
+name = "daily"
+description = "Daily-driver setup with CLI tools, desktop apps, KDE polish, and security basics."
+sections = ["core", "extras", "kde", "security"]
+risk = "medium"

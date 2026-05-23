@@ -1,12 +1,12 @@
 # License
 
-Fedora Glow Kit's original installer scripts, shell helpers, README text, and sanitized sample configuration files are released under the MIT License.
+Fedora Plasma Glow Kit's original installer scripts, shell helpers, README text, and sanitized sample configuration files are released under the MIT License.
 
 Third-party assets, packages, browser extensions, themes, widgets, icons, and upstream projects retain their own licenses and attribution. See `CREDITS.md` for the bundled and referenced upstreams.
 
 ## MIT License
 
-Copyright (c) 2026 Fedora Glow Kit contributors
+Copyright (c) 2026 Fedora Plasma Glow Kit contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, subject to the following conditions:
 

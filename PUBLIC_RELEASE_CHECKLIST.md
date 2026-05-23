@@ -1,6 +1,6 @@
 # Public Release Checklist
 
-Recommended repository name: `fedora-glow-kit`
+Recommended repository name: `fedora-plasma-glow-kit`
 
 Why this name:
 
@@ -17,7 +17,7 @@ Good alternatives:
 Before publishing:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash scripts/audit-public.sh
 ```
 
@@ -26,15 +26,15 @@ Create the public repo after the audit passes:
 ```bash
 git init
 git add .
-git commit -m "Initial Fedora Glow Kit"
-gh repo create fedora-glow-kit --public --source=. --remote=origin --push
+git commit -m "Initial Fedora Plasma Glow Kit"
+gh repo create fedora-plasma-glow-kit --public --source=. --remote=origin --push
 ```
 
 After publishing, enable repository protections:
 
 ```bash
-gh api --method PUT repos/daredoole/fedora-glow-kit/vulnerability-alerts
-gh api --method PUT repos/daredoole/fedora-glow-kit/automated-security-fixes
+gh api --method PUT repos/daredoole/fedora-plasma-glow-kit/vulnerability-alerts
+gh api --method PUT repos/daredoole/fedora-plasma-glow-kit/automated-security-fixes
 ```
 
 Protect `main` in GitHub settings or through the API:

@@ -6,17 +6,21 @@ DNF="${DNF:-dnf}"
 CHANGED=()
 SKIPPED=()
 LAST_BACKUP_PATH=""
-STATE_DIR="$HOME/.local/state/fedora-starter-kit"
+STATE_DIR="$HOME/.local/state/fedora-plasma-glow-kit"
 STATE_FILE="$STATE_DIR/install.state"
 
 # shellcheck source=/dev/null
 # shellcheck disable=SC1091
 [ -f "$ROOT_DIR/shell/ui.sh" ] && . "$ROOT_DIR/shell/ui.sh"
 ui_intro 2>/dev/null || true
-ui_title "Fedora Glow Kit KDE" 2>/dev/null || echo "Fedora Glow Kit KDE"
+ui_title "Fedora Plasma Glow Kit KDE" 2>/dev/null || echo "Fedora Plasma Glow Kit KDE"
 
 ask() {
   local prompt="$1" default="${2:-n}" reply
+  case "${FEDORA_PLASMA_GLOW_ASSUME:-}" in
+    yes|YES|y|Y|true|TRUE|1) return 0 ;;
+    no|NO|n|N|false|FALSE|0) return 1 ;;
+  esac
   read -r -p "$prompt [$default] " reply || true
   reply="${reply:-$default}"
   [[ "$reply" =~ ^[Yy]$|^[Yy][Ee][Ss]$ ]]

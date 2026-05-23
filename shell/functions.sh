@@ -79,7 +79,7 @@ ffz() {
 
 halp() {
   cat <<'EOF'
-Fedora Glow Kit help
+Fedora Plasma Glow Kit help
 
 Core commands:
   update_all             Update DNF packages and Flatpaks

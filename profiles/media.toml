@@ -1,0 +1,4 @@
+name = "media"
+description = "Desktop/media setup. RPM Fusion and codec actions remain opt-in."
+sections = ["core", "extras", "kde"]
+risk = "medium"

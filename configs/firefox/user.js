@@ -1,4 +1,4 @@
-// Fedora Glow Kit Firefox user.js
+// Fedora Plasma Glow Kit Firefox user.js
 // Sanitized portable prefs only. No profile IDs, accounts, cookies, history,
 // extension storage, passwords, paths, homepages, search engines, or sync state.
 

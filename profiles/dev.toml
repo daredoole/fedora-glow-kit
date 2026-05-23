@@ -1,0 +1,4 @@
+name = "dev"
+description = "Developer-focused setup with CLI tools, extras, AI tools, and security basics."
+sections = ["core", "extras", "ai", "security"]
+risk = "medium"

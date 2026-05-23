@@ -1,0 +1,4 @@
+name = "ai"
+description = "Core shell setup plus opt-in AI CLI tools. No API keys or account state are copied."
+sections = ["core", "ai"]
+risk = "medium"

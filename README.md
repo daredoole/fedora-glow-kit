@@ -1,6 +1,11 @@
-# Fedora Glow Kit
+# Fedora Plasma Glow Kit
 
-Fedora Glow Kit is a safe, reusable Fedora starter kit built from a real Fedora KDE/Workstation setup. Its goal is to give a friend a polished Linux baseline: useful CLI tools, shell quality-of-life, terminal customization, Firefox privacy/performance settings, KDE theming, optional desktop apps, and optional developer utilities.
+A polished, safe, reversible Fedora 44 KDE Plasma setup kit.
+
+
+A polished, safe, reversible Fedora 44 KDE Plasma setup kit.
+
+Fedora Plasma Glow Kit is a safe, reusable Fedora starter kit built from a real Fedora KDE/Workstation setup. Its goal is to give a friend a polished Linux baseline: useful CLI tools, shell quality-of-life, terminal customization, Firefox privacy/performance settings, KDE theming, optional desktop apps, and optional developer utilities.
 
 It is intentionally conservative. Installers ask before changing configs, back up files before edits, skip existing theme assets, and avoid copying private data such as browser profiles, SSH keys, tokens, work aliases, VPN state, cookies, history, credentials, or machine-specific project paths.
 
@@ -13,64 +18,64 @@ Credits for bundled assets, optional extension installs, themes, and upstream to
 Guided setup with install/revert/skip choices per section:
 
 ```bash
-git clone https://github.com/<you>/fedora-glow-kit.git
-cd fedora-glow-kit
+git clone https://github.com/daredoole/fedora-plasma-glow-kit.git
+cd fedora-plasma-glow-kit
 bash manage.sh
 ```
 
 If you are already inside the repo:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash manage.sh
 ```
 
 Core install:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash install.sh
 ```
 
 Optional extras:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash install-extras.sh
 ```
 
 KDE customization:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash install-kde.sh
 ```
 
 Security best-practice setup:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash install-security.sh
 ```
 
 AI CLI tools:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash install-ai.sh
 ```
 
 Revert kit-managed config changes:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash revert.sh
 ```
 
 Public-readiness audit before sharing:
 
 ```bash
-cd fedora-glow-kit
+cd fedora-plasma-glow-kit
 bash scripts/audit-public.sh
 ```
 
@@ -86,6 +91,33 @@ Disable terminal animation or color:
 FEDORA_STARTER_NO_ANIMATION=1 bash install.sh
 NO_COLOR=1 bash install.sh
 ```
+
+
+## Profiles
+
+The guided installer is still interactive by default, but the manager also supports profile and dry-run modes:
+
+```bash
+bash manage.sh --dry-run --profile daily
+bash manage.sh --yes --profile minimal
+bash manage.sh --section kde
+bash manage.sh --revert kde
+bash manage.sh --audit
+```
+
+Available profiles:
+
+- `minimal`
+- `daily`
+- `dev`
+- `kde-polish`
+- `media`
+- `gaming`
+- `privacy`
+- `ai`
+- `full-send`
+
+See `docs/` for Fedora 44 KDE Plasma recommendations, app choices, security model, Firefox policy notes, AI tool notes, troubleshooting, and recovery.
 
 ## What It Does
 

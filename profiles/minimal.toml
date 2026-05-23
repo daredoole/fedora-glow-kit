@@ -1,0 +1,4 @@
+name = "minimal"
+description = "Small safe baseline for a fresh Fedora KDE Plasma install."
+sections = ["core", "security"]
+risk = "low"
