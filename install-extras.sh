@@ -107,6 +107,17 @@ if ask "Install monitoring and sysadmin tools?" "y"; then
   install_dnf_skip_unavailable nvtop iotop sysstat vdpauinfo libva-utils
 fi
 
+if ask "Install Tailscale mesh VPN package from Fedora repos?" "n"; then
+  ui_section "Tailscale" 2>/dev/null || true
+  install_dnf_skip_unavailable tailscale
+fi
+
+if command_exists tailscale && ask "Enable and start tailscaled service? This does not join a tailnet." "n"; then
+  sudo systemctl enable --now tailscaled
+  CHANGED+=("enabled tailscaled service")
+  ui_info "Run 'sudo tailscale up' when ready to sign in and join a tailnet." 2>/dev/null || true
+fi
+
 if ask "Enable and start sysstat service?" "n"; then
   sudo systemctl enable --now sysstat
   CHANGED+=("enabled sysstat")

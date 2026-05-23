@@ -96,6 +96,7 @@ These tools are installed from Fedora, Flathub, npm, or the user's configured pa
 | just | https://github.com/casey/just |
 | Podman | https://podman.io/ |
 | Distrobox | https://github.com/89luca89/distrobox |
+| Tailscale | https://tailscale.com/ |
 | Neovim | https://github.com/neovim/neovim |
 | micro | https://github.com/zyedidia/micro |
 | kitty | https://github.com/kovidgoyal/kitty |

@@ -92,6 +92,16 @@ FEDORA_STARTER_NO_ANIMATION=1 bash install.sh
 NO_COLOR=1 bash install.sh
 ```
 
+## Mock Run / Dry Run
+
+Use `manage.sh --dry-run` to preview what would run without invoking installers, writing files, installing packages, enabling services, or changing your system:
+
+```bash
+bash manage.sh --dry-run --profile daily
+bash manage.sh --dry-run --section extras
+bash manage.sh --dry-run --section kde
+```
+
 ## Fresh Fedora Hardware Preflight
 
 On a fresh Fedora install, update the system and firmware before applying desktop customization:
@@ -175,6 +185,7 @@ See `docs/` for Fedora 44 KDE Plasma recommendations, app choices, security mode
 - lightweight GUI utilities: Catfish file search, KWrite, FeatherPad, GNOME Text Editor, and micro
 - Go, Rust, Docker Compose
 - nvtop, iotop, sysstat, VAAPI/VDPAU tools
+- optional Tailscale package and separate `tailscaled` service enablement
 - terminal art tools like cmatrix, asciiquarium, pipes, cbonsai, fortune, cowsay, lolcat, figlet, toilet, nyancat, sl, and tty-clock
 - optional RPM Fusion repositories
 - optional media codecs and Mesa VAAPI/VDPAU packages
