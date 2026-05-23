@@ -74,7 +74,7 @@ flatpak_install() {
 
 if ask "Install extra editors, terminals, and dev tools?" "y"; then
   ui_section "Developer Extras" 2>/dev/null || true
-  install_dnf_skip_unavailable neovim micro kitty wezterm lazygit git-delta golang rust cargo docker-compose direnv git-lfs just distrobox podman-compose
+  install_dnf_skip_unavailable neovim micro kitty wezterm lazygit ripgrep git-delta golang rust cargo docker-compose direnv git-lfs just distrobox podman-compose
 else
   SKIPPED+=("extra dev tools")
 fi

@@ -2,28 +2,10 @@
 // Sanitized portable prefs only. No profile IDs, accounts, cookies, history,
 // extension storage, passwords, paths, homepages, search engines, or sync state.
 
-// Performance / "fastfox" style tuning
-user_pref("gfx.canvas.accelerated.cache-size", 512);
-user_pref("gfx.content.skia-font-cache-size", 20);
+// Performance: current BetterFox defaults plus conservative Fedora media support
 user_pref("browser.cache.disk.enable", false);
-user_pref("browser.sessionhistory.max_total_viewers", 4);
-user_pref("memory.free_dirty_pages", true);
 user_pref("media.memory_cache_max_size", 65536);
-user_pref("media.cache_readahead_limit", 7200);
-user_pref("media.cache_resume_threshold", 3600);
-user_pref("image.mem.decode_bytes_at_a_time", 32768);
-user_pref("network.http.max-urgent-start-excessive-connections-per-host", 2);
-user_pref("network.dnsCacheExpiration", 3600);
-user_pref("network.ssl_tokens_cache_capacity", 10240);
-user_pref("nglayout.initialpaint.delay", 120);
-user_pref("nglayout.initialpaint.delay_in_oopif", 120);
-user_pref("layout.frame_rate", 60);
-user_pref("dom.min_timeout_value", 20);
-user_pref("dom.min_timeout_value_without_bg_throttling", 20);
-user_pref("dom.min_background_timeout_value", 1000);
-user_pref("dom.timeout.enable_budget_timer_throttling", true);
-user_pref("browser.tabs.unloadOnLowMemory", true);
-user_pref("dom.ipc.processCount.webIsolated", 4);
+user_pref("browser.sessionstore.interval", 60000);
 
 // Reduce speculative network activity
 user_pref("network.http.speculative-parallel-limit", 0);
@@ -32,23 +14,26 @@ user_pref("network.dns.disablePrefetchFromHTTPS", true);
 user_pref("browser.urlbar.speculativeConnect.enabled", false);
 user_pref("browser.places.speculativeConnect.enabled", false);
 user_pref("network.prefetch-next", false);
-user_pref("network.predictor.enabled", false);
 
 // Hardware media support
 user_pref("media.ffmpeg.vaapi.enabled", true);
 user_pref("media.hardware-video-decoding.enabled", true);
-user_pref("media.hardware-video-decoding.force-enabled", true);
 user_pref("media.suspend-bkgnd-video.enabled", true);
 user_pref("media.block-autoplay-until-in-foreground", true);
 
 // Privacy and tracking controls
 user_pref("browser.contentblocking.category", "strict");
 user_pref("privacy.globalprivacycontrol.enabled", true);
+user_pref("privacy.antitracking.isolateContentScriptResources", true);
 user_pref("privacy.trackingprotection.allow_list.baseline.enabled", true);
 user_pref("privacy.trackingprotection.allow_list.convenience.enabled", true);
+user_pref("privacy.userContext.enabled", true);
 user_pref("privacy.userContext.ui.enabled", true);
 user_pref("network.IDN_show_punycode", true);
 user_pref("network.http.referer.XOriginTrimmingPolicy", 2);
+user_pref("dom.security.https_only_mode", true);
+user_pref("dom.security.https_only_mode_error_page_user_suggestions", true);
+user_pref("dom.security.https_only_mode.upgrade_local", false);
 user_pref("security.tls.enable_0rtt_data", false);
 user_pref("security.ssl.treat_unsafe_negotiation_as_broken", true);
 user_pref("security.mixed_content.block_display_content", true);
@@ -81,8 +66,7 @@ user_pref("extensions.getAddons.cache.enabled", false);
 // UI / quality of life
 user_pref("browser.aboutwelcome.enabled", false);
 user_pref("browser.compactmode.show", true);
-user_pref("browser.ml.enable", false);
-user_pref("browser.ml.chat.enabled", false);
+user_pref("browser.profiles.enabled", true);
 user_pref("browser.urlbar.trending.featureGate", false);
 user_pref("browser.urlbar.trimHttps", true);
 user_pref("browser.urlbar.untrimOnUserInteraction.featureGate", true);
@@ -97,9 +81,6 @@ user_pref("browser.bookmarks.openInTabClosesMenu", false);
 user_pref("browser.menu.showViewImageInfo", true);
 user_pref("findbar.highlightAll", true);
 user_pref("layout.word_select.eat_space_to_next_word", false);
-user_pref("general.smoothScroll", false);
-user_pref("toolkit.cosmeticAnimations.enabled", false);
-user_pref("ui.prefersReducedMotion", 1);
 user_pref("full-screen-api.transition-duration.enter", "0 0");
 user_pref("full-screen-api.transition-duration.leave", "0 0");
 user_pref("full-screen-api.warning.timeout", 0);

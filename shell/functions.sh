@@ -80,6 +80,7 @@ ffz() {
   fi
 }
 
+if ! command -v halp >/dev/null 2>&1; then
 halp() {
   cat <<'EOF'
 Fedora Plasma Glow Kit help
@@ -122,3 +123,4 @@ Security baseline:
   before enabling device blocking.
 EOF
 }
+fi

@@ -92,6 +92,23 @@ FEDORA_STARTER_NO_ANIMATION=1 bash install.sh
 NO_COLOR=1 bash install.sh
 ```
 
+## Windows SSD Dual Boot Preflight
+
+Before shrinking a Windows 11 `C:` partition to make room for Fedora on the same SSD, run the audit script from an elevated PowerShell window:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass -Force
+.\scripts\windows\Fedora-DualBoot-Preflight.ps1 -FedoraSpaceGB 120
+```
+
+The script checks admin rights, GPT/UEFI layout, BitLocker, Fast Startup, free space, recovery partitions, and the Windows-supported shrink range. It does not resize the disk or change Windows settings; if the checks pass, it prints the `Resize-Partition` command to run manually after backups and recovery-key prep.
+
+## Package Source Policy
+
+The kit prefers Fedora-managed packages first. CLI tools, KDE utilities, Catfish, ripgrep, codecs, security tools, and most extras install through `dnf` when available, so the installed system is not dependent on this repository after setup.
+
+Flatpak is used for optional desktop apps where that is the cleaner upstream distribution path. npm is limited to explicit opt-in AI CLI tools. RPM Fusion and COPR actions stay prompt-gated because they add third-party package sources.
+
 
 ## Profiles
 
@@ -140,7 +157,7 @@ See `docs/` for Fedora 44 KDE Plasma recommendations, app choices, security mode
 
 `install-extras.sh` installs optional heavier tools and app groups:
 
-- Neovim, micro, kitty, WezTerm, lazygit
+- Neovim, micro, kitty, WezTerm, lazygit, ripgrep
 - lightweight GUI utilities: Catfish file search, KWrite, FeatherPad, GNOME Text Editor, and micro
 - Go, Rust, Docker Compose
 - nvtop, iotop, sysstat, VAAPI/VDPAU tools
