@@ -5,8 +5,10 @@ Safely audits a Windows 11 laptop before shrinking C: for a Fedora dual boot ins
 .DESCRIPTION
 This script checks whether a Windows SSD looks ready for a manual Fedora dual boot
 resize. It does not shrink partitions, modify the bootloader, disable BitLocker,
-or change Windows settings. If the requested Fedora allocation appears viable, it
-prints a Resize-Partition command for manual review.
+or change Windows settings. If requested, it can export browser bookmarks to HTML
+files for import on Fedora without copying cookies, passwords, sessions, history,
+or browser profiles. If the requested Fedora allocation appears viable, it prints
+a Resize-Partition command for manual review.
 #>
 
 [CmdletBinding()]
@@ -16,6 +18,10 @@ param(
 
     [ValidateRange(40, 2048)]
     [int]$MinimumWindowsFreeAfterShrinkGB = 80,
+
+    [switch]$ExportBrowserBookmarks,
+
+    [string]$BookmarkExportDirectory = "$env:USERPROFILE\Desktop\Fedora-Bookmark-Export",
 
     [switch]$Json
 )
@@ -58,6 +64,7 @@ $results = [ordered]@{
     Checks = @()
     Blockers = @()
     Warnings = @()
+    BookmarkExports = @()
     SuggestedCommand = $null
 }
 
@@ -85,6 +92,140 @@ function Add-Check {
     }
     else {
         Write-Ok "$Name`: $Detail"
+    }
+}
+
+function ConvertTo-BookmarkHtml {
+    param(
+        [object]$Bookmarks,
+        [string]$BrowserName
+    )
+
+    $builder = [System.Text.StringBuilder]::new()
+    [void]$builder.AppendLine("<!DOCTYPE NETSCAPE-Bookmark-file-1>")
+    [void]$builder.AppendLine("<META HTTP-EQUIV=`"Content-Type`" CONTENT=`"text/html; charset=UTF-8`">")
+    [void]$builder.AppendLine("<TITLE>$([System.Net.WebUtility]::HtmlEncode($BrowserName)) Bookmarks</TITLE>")
+    [void]$builder.AppendLine("<H1>$([System.Net.WebUtility]::HtmlEncode($BrowserName)) Bookmarks</H1>")
+    [void]$builder.AppendLine("<DL><p>")
+
+    function Add-BookmarkNode {
+        param(
+            [object]$Node,
+            [int]$Depth
+        )
+
+        $indent = "  " * $Depth
+        if ($Node.type -eq "url" -and $Node.url) {
+            $name = [System.Net.WebUtility]::HtmlEncode($Node.name)
+            $url = [System.Net.WebUtility]::HtmlEncode($Node.url)
+            [void]$builder.AppendLine("$indent<DT><A HREF=`"$url`">$name</A>")
+            return
+        }
+
+        if ($Node.children) {
+            $name = [System.Net.WebUtility]::HtmlEncode($Node.name)
+            if (-not $name) { $name = "Bookmarks" }
+            [void]$builder.AppendLine("$indent<DT><H3>$name</H3>")
+            [void]$builder.AppendLine("$indent<DL><p>")
+            foreach ($child in $Node.children) {
+                Add-BookmarkNode -Node $child -Depth ($Depth + 1)
+            }
+            [void]$builder.AppendLine("$indent</DL><p>")
+        }
+    }
+
+    $rootLabels = @{
+        bookmark_bar = "Bookmarks Bar"
+        other = "Other Bookmarks"
+        synced = "Mobile Bookmarks"
+    }
+
+    foreach ($rootProperty in $Bookmarks.roots.PSObject.Properties) {
+        $root = $rootProperty.Value
+        if (-not $root.children) { continue }
+        if ($rootLabels.ContainsKey($rootProperty.Name)) {
+            $root.name = $rootLabels[$rootProperty.Name]
+        }
+        Add-BookmarkNode -Node $root -Depth 1
+    }
+
+    [void]$builder.AppendLine("</DL><p>")
+    return $builder.ToString()
+}
+
+function Export-ChromiumBookmarks {
+    param(
+        [string]$BrowserName,
+        [string]$BookmarkPath,
+        [string]$OutputDirectory
+    )
+
+    if (-not (Test-Path $BookmarkPath)) { return $false }
+
+    try {
+        New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
+        $bookmarks = Get-Content -Path $BookmarkPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        $html = ConvertTo-BookmarkHtml -Bookmarks $bookmarks -BrowserName $BrowserName
+        $safeName = ($BrowserName -replace '[^A-Za-z0-9._-]', '-').ToLowerInvariant()
+        $outputPath = Join-Path $OutputDirectory "$safeName-bookmarks.html"
+        Set-Content -Path $outputPath -Value $html -Encoding UTF8
+        $script:results.BookmarkExports += $outputPath
+        Add-Check "Bookmark Export - $BrowserName" "OK" "Exported bookmarks to $outputPath."
+        return $true
+    }
+    catch {
+        Add-Check "Bookmark Export - $BrowserName" "WARN" "Failed to export bookmarks. $_"
+        return $false
+    }
+}
+
+function Invoke-BookmarkExport {
+    $shouldExport = $ExportBrowserBookmarks
+
+    if (-not $Json -and -not $ExportBrowserBookmarks) {
+        Write-Section "Optional Browser Bookmark Export"
+        Write-Host "This can export Chrome, Edge, Brave, and Vivaldi bookmarks to HTML files for import on Fedora." -ForegroundColor White
+        Write-Host "It does NOT copy cookies, passwords, sessions, history, Sync state, or browser profiles." -ForegroundColor Yellow
+        $reply = Read-Host "Export supported browser bookmarks now? [n]"
+        $shouldExport = ($reply -match '^[Yy]$|^[Yy][Ee][Ss]$')
+    }
+
+    if (-not $shouldExport) {
+        Add-Check "Browser Bookmark Export" "OK" "Skipped."
+        return
+    }
+
+    $candidates = @(
+        @{
+            Name = "Chrome"
+            Path = "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Bookmarks"
+        },
+        @{
+            Name = "Microsoft Edge"
+            Path = "$env:LOCALAPPDATA\Microsoft\Edge\User Data\Default\Bookmarks"
+        },
+        @{
+            Name = "Brave"
+            Path = "$env:LOCALAPPDATA\BraveSoftware\Brave-Browser\User Data\Default\Bookmarks"
+        },
+        @{
+            Name = "Vivaldi"
+            Path = "$env:LOCALAPPDATA\Vivaldi\User Data\Default\Bookmarks"
+        }
+    )
+
+    $exported = 0
+    foreach ($candidate in $candidates) {
+        if (Export-ChromiumBookmarks -BrowserName $candidate.Name -BookmarkPath $candidate.Path -OutputDirectory $BookmarkExportDirectory) {
+            $exported++
+        }
+    }
+
+    if ($exported -eq 0) {
+        Add-Check "Browser Bookmark Export" "WARN" "No supported Chromium bookmark files were found. Firefox users should export bookmarks from Firefox Library > Import and Backup > Export Bookmarks to HTML."
+    }
+    else {
+        Add-Check "Browser Bookmark Import Tip" "OK" "On Fedora Firefox, import with Bookmarks > Manage bookmarks > Import and Backup > Import Bookmarks from HTML."
     }
 }
 
@@ -317,6 +458,8 @@ try {
 catch {
     Add-Check "Partition Order" "WARN" "Could not analyze partition order."
 }
+
+Invoke-BookmarkExport
 
 Write-Section "Current Disk Layout"
 
