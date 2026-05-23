@@ -16,7 +16,8 @@ The audit used conservative filtering. Items below were skipped or replaced with
 - `dotenv` and `keyring` in `~/.local/bin`: sensitive-looking helper names, excluded.
 - Browser, VPN, client, and identity-adjacent config directories: excluded by policy.
 - Flatpak apps tied to identity, messaging, finance, VPN, or private workflows: not installed by default.
-- Firefox profile data: excluded entirely. No cookies, history, sessions, extension storage, logins, Sync state, bookmarks, search history, site permissions, or browser account data were copied.
+- Firefox profile data: excluded entirely. No cookies, history, sessions, extension storage, logins, Sync state, search history, site permissions, or browser account data were copied.
+- Browser bookmarks are only handled by the optional Windows preflight export, which writes portable bookmark HTML files and does not copy browser profiles.
 - Firefox extension settings: excluded because extension storage can contain account state, site lists, browsing-derived data, tokens, or personal preferences.
 - Firefox built-in Mozilla system extensions: excluded from extension install policy because Firefox manages them itself.
 - `Remove Paywall`: excluded from the install policy because the audit did not identify a safe public AMO install URL.
