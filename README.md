@@ -92,6 +92,20 @@ FEDORA_STARTER_NO_ANIMATION=1 bash install.sh
 NO_COLOR=1 bash install.sh
 ```
 
+## Fresh Fedora Hardware Preflight
+
+On a fresh Fedora install, update the system and firmware before applying desktop customization:
+
+```bash
+sudo dnf upgrade --refresh
+sudo fwupdmgr refresh --force
+sudo fwupdmgr get-updates
+sudo fwupdmgr update
+reboot
+```
+
+This matters most on new laptops, AMD APUs/GPUs, Wi-Fi chipsets, docks, and touchpads because the newest kernel, Mesa, and firmware packages can affect hardware behavior. The installer prompts for this check before making changes, but it does not run firmware updates automatically.
+
 ## Windows SSD Dual Boot Preflight
 
 Before shrinking a Windows 11 `C:` partition to make room for Fedora on the same SSD, run the audit script from an elevated PowerShell window:

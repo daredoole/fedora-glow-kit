@@ -71,6 +71,25 @@ done
 ui_intro 2>/dev/null || true
 ui_title "Fedora Plasma Glow Kit Guided Setup" 2>/dev/null || echo "Fedora Plasma Glow Kit Guided Setup"
 
+ask() {
+  local prompt="$1" default="${2:-n}" reply
+  case "${FEDORA_PLASMA_GLOW_ASSUME:-}" in
+  yes | YES | y | Y | true | TRUE | 1) return 0 ;;
+  no | NO | n | N | false | FALSE | 0) return 1 ;;
+  esac
+  read -r -p "$prompt [$default] " reply || true
+  reply="${reply:-$default}"
+  [[ "$reply" =~ ^[Yy]$|^[Yy][Ee][Ss]$ ]]
+}
+
+# shellcheck source=/dev/null
+# shellcheck disable=SC1091
+[ -f "$ROOT_DIR/lib/preflight.sh" ] && . "$ROOT_DIR/lib/preflight.sh"
+
+if [ "$DRY_RUN" -eq 0 ] && [ "$RUN_AUDIT" -eq 0 ] && [ -z "$REVERT_SECTION" ]; then
+  FEDORA_PLASMA_GLOW_ASSUME="$ASSUME" fedora_hardware_preflight
+fi
+
 run_cmd() {
   local label="$1"
   shift

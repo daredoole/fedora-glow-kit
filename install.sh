@@ -28,6 +28,10 @@ ask() {
   [[ "$reply" =~ ^[Yy]$|^[Yy][Ee][Ss]$ ]]
 }
 
+# shellcheck source=/dev/null
+# shellcheck disable=SC1091
+[ -f "$ROOT_DIR/lib/preflight.sh" ] && . "$ROOT_DIR/lib/preflight.sh"
+
 command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
@@ -115,6 +119,8 @@ else
   ui_warn "This script is intended for Fedora." 2>/dev/null || echo "This script is intended for Fedora." >&2
   ask "Continue anyway?" "n" || exit 1
 fi
+
+fedora_hardware_preflight
 
 MISSING_PKGS=()
 add_pkg_if_missing zsh zsh

@@ -25,6 +25,12 @@ ask() {
   [[ "$reply" =~ ^[Yy]$|^[Yy][Ee][Ss]$ ]]
 }
 
+# shellcheck source=/dev/null
+# shellcheck disable=SC1091
+[ -f "$ROOT_DIR/lib/preflight.sh" ] && . "$ROOT_DIR/lib/preflight.sh"
+
+fedora_hardware_preflight
+
 command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
