@@ -79,9 +79,9 @@ else
   SKIPPED+=("extra dev tools")
 fi
 
-if ask "Install lightweight GUI text editors for quick config edits?" "y"; then
-  ui_section "Lightweight Editors" 2>/dev/null || true
-  install_dnf_skip_unavailable kwrite featherpad gnome-text-editor micro
+if ask "Install lightweight GUI file search and text editors?" "y"; then
+  ui_section "Lightweight GUI Utilities" 2>/dev/null || true
+  install_dnf_skip_unavailable catfish kwrite featherpad gnome-text-editor micro
 fi
 
 if ask "Install KDE desktop customization packages?" "y"; then

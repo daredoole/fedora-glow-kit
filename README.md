@@ -124,7 +124,7 @@ See `docs/` for Fedora 44 KDE Plasma recommendations, app choices, security mode
 `install.sh` installs the core command-line setup and optional safe configs:
 
 - zsh, starship, zellij, fastfetch
-- ripgrep, fd, bat, eza, fzf, zoxide
+- ripgrep (`rg`), fd, bat, eza, fzf, zoxide
 - jq, yq, btop, tree, tealdeer/tldr
 - git, GitHub CLI, git-delta, git-lfs
 - curl, wget, unzip, p7zip, rsync
@@ -141,7 +141,7 @@ See `docs/` for Fedora 44 KDE Plasma recommendations, app choices, security mode
 `install-extras.sh` installs optional heavier tools and app groups:
 
 - Neovim, micro, kitty, WezTerm, lazygit
-- lightweight quick editors: KWrite, FeatherPad, GNOME Text Editor, and micro
+- lightweight GUI utilities: Catfish file search, KWrite, FeatherPad, GNOME Text Editor, and micro
 - Go, Rust, Docker Compose
 - nvtop, iotop, sysstat, VAAPI/VDPAU tools
 - terminal art tools like cmatrix, asciiquarium, pipes, cbonsai, fortune, cowsay, lolcat, figlet, toilet, nyancat, sl, and tty-clock
@@ -150,7 +150,7 @@ See `docs/` for Fedora 44 KDE Plasma recommendations, app choices, security mode
 - optional Bluetooth headphone codec/support packages
 - optional Flatpak groups for daily apps, gaming/media, messaging/social, and advanced/privacy/dev tools
 
-The recommended simple editor path is KWrite plus FeatherPad. They open quickly, support syntax highlighting and themes, and are better suited for quick config edits than a full IDE. The shell helper `qedit FILE` opens KWrite first, then FeatherPad, then GNOME Text Editor, then falls back to `$EDITOR`.
+The recommended simple editor path is KWrite plus FeatherPad. They open quickly, support syntax highlighting and themes, and are better suited for quick config edits than a full IDE. Catfish adds a lightweight graphical file search option. The shell helper `qedit FILE` opens KWrite first, then FeatherPad, then GNOME Text Editor, then falls back to `$EDITOR`.
 
 `install-kde.sh` installs KDE desktop customization:
 

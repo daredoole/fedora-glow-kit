@@ -77,7 +77,7 @@ These tools are installed from Fedora, Flathub, npm, or the user's configured pa
 | Starship | https://github.com/starship/starship |
 | Zellij | https://github.com/zellij-org/zellij |
 | Fastfetch | https://github.com/fastfetch-cli/fastfetch |
-| ripgrep | https://github.com/BurntSushi/ripgrep |
+| ripgrep (`rg`) | https://github.com/BurntSushi/ripgrep |
 | fd | https://github.com/sharkdp/fd |
 | bat | https://github.com/sharkdp/bat |
 | eza | https://github.com/eza-community/eza |
@@ -101,6 +101,7 @@ These tools are installed from Fedora, Flathub, npm, or the user's configured pa
 | kitty | https://github.com/kovidgoyal/kitty |
 | WezTerm | https://github.com/wez/wezterm |
 | lazygit | https://github.com/jesseduffield/lazygit |
+| Catfish | https://gitlab.xfce.org/apps/catfish |
 | OpenAI Codex CLI | https://www.npmjs.com/package/@openai/codex |
 | Claude Code | https://www.npmjs.com/package/@anthropic-ai/claude-code |
 

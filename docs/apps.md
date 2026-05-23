@@ -8,7 +8,7 @@ This catalog is intentionally opinionated but reversible.
 - starship
 - zellij
 - fastfetch
-- ripgrep
+- ripgrep (`rg`)
 - fd
 - bat
 - eza
@@ -35,6 +35,7 @@ This catalog is intentionally opinionated but reversible.
 - papirus-icon-theme
 - kdeconnectd
 - bluedevil
+- catfish
 - kwrite
 - featherpad
 
