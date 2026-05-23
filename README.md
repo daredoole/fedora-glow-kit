@@ -131,6 +131,8 @@ To also export supported Windows browser bookmarks as HTML files for import on F
 .\scripts\windows\Fedora-DualBoot-Preflight.ps1 -FedoraSpaceGB 120 -ExportBrowserBookmarks
 ```
 
+The default Windows reserve is 80 GB. For example, `-FedoraSpaceGB 74` requires about 154 GB free before shrinking because the script reserves 74 GB for Fedora plus 80 GB left free for Windows. You can lower the reserve with `-MinimumWindowsFreeAfterShrinkGB`, but leaving Windows with only a few GB free is not recommended.
+
 The script checks admin rights, GPT/UEFI layout, BitLocker, Fast Startup, free space, recovery partitions, and the Windows-supported shrink range. It does not resize the disk or change Windows settings; if the checks pass, it prints the `Resize-Partition` command to run manually after backups and recovery-key prep.
 
 Bookmark export is opt-in. It exports Chrome, Edge, Brave, and Vivaldi bookmark HTML files only; it does not copy browser profiles, cookies, passwords, sessions, history, Sync state, or extension data. In Fedora Firefox, import the HTML file with Bookmarks > Manage bookmarks > Import and Backup > Import Bookmarks from HTML.
