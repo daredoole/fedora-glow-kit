@@ -122,5 +122,9 @@ Security baseline:
   browser/password-manager data out of dotfile sync, and review USBGuard
   before enabling device blocking.
 EOF
+  if command -v alias >/dev/null 2>&1; then
+    printf '\nDetected local aliases:\n'
+    alias | sed -n '1,40p' | sed 's/^/  /'
+  fi
 }
 fi

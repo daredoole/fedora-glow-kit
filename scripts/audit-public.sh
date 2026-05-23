@@ -69,6 +69,12 @@ if command -v rg >/dev/null 2>&1; then
   check "no local home paths" \
     bash -c 'cd "$1" && ! rg -n --hidden --glob "!.git/**" --glob "!configs/kde/themes/**" --glob "!configs/kde/plasmoids/**" --glob "!*.png" "/home/[A-Za-z0-9_-]+|C:\\\\Users\\\\" .' _ "$ROOT_DIR"
 
+  check "no personal project aliases or host shortcuts" \
+    bash -c 'cd "$1" && ! rg -n --hidden --glob "!.git/**" --glob "!EXCLUDED_PRIVATE_ITEMS.md" --glob "!scripts/audit-public.sh" "alias[[:space:]]+[^=]+=.*/(projects|agents)/|~/projects|~/agents|WattRat|HomeRat|smartrat|fedora-agent|zellij-new|linuxbrew|ambient-saver|curl ifconfig\\.me" .' _ "$ROOT_DIR"
+
+  check "no personal shell dumps" \
+    bash -c 'cd "$1" && ! rg -n --hidden --glob "!.git/**" --glob "!EXCLUDED_PRIVATE_ITEMS.md" --glob "!scripts/audit-public.sh" "alias[[:space:]]+(wr|cdhr|agent|rat|dbx-fedora)=|alias[[:space:]]+p=.cd ~/projects" .' _ "$ROOT_DIR"
+
   check "no README placeholder clone URL" \
     bash -c 'cd "$1" && ! rg -n --hidden --glob "!.git/**" --glob "!scripts/audit-public.sh" "github.com/<you>|<you>/" .' _ "$ROOT_DIR"
 
