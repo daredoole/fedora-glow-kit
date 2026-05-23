@@ -1,191 +1,338 @@
 {
-  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  // ─────────────────────────────────────────────────────────────────────────
+  // Glow Kit — Elite Fastfetch Config
+  // Requires: sixel-capable terminal (kitty, konsole, WezTerm, foot, etc.)
+  // Logo:     drop your image at ~/.config/fastfetch/dog_transparent.png
+  //           (or change "source" below to any PNG/JPG you want)
+  // ─────────────────────────────────────────────────────────────────────────
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json",
   "logo": {
-    "type": "file",
+    "type": "sixel",
     "source": "~/.config/fastfetch/dog_transparent.png",
-    "width": 42,
-    "height": 20,
+    "width": 44,
+    "height": 24,
     "preserveAspectRatio": true,
     "padding": {
-      "top": 10,
+      "top": 16,
       "left": 4,
-      "right": 4
+      "right": 2
     }
   },
   "display": {
     "separator": "  ",
     "key": {
-      "width": 18
+      "width": 20
     }
   },
   "modules": [
     "break",
+
+    // ╔══════════════════════════════ Title ═══════════════════════════════════╗
     {
       "type": "custom",
-      "format": "┌────────────────────── Hardware ──────────────────────┐",
-      "outputColor": "red"
+      "format": "╔════════════════════════════════════════════════════════════════════════════════╗",
+      "outputColor": "bright_magenta"
     },
     {
       "type": "title",
-      "key": " PC",
-      "keyColor": "green"
+      "key": "║  󰌠 User",
+      "keyColor": "bright_magenta"
+    },
+    {
+      "type": "datetime",
+      "key": "║  󰃭 Date",
+      "keyColor": "magenta"
+    },
+    {
+      "type": "custom",
+      "format": "╚════════════════════════════════════════════════════════════════════════════════╝",
+      "outputColor": "bright_magenta"
+    },
+    {
+      "type": "custom",
+      "format": "  ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·",
+      "outputColor": "bright_black"
+    },
+
+    // ╔══════════════════════════════ 󰣛  System ═══════════════════════════════╗
+    {
+      "type": "custom",
+      "format": "╔══════════════════════════════════ 󰣛  System ═════════════════════════════════╗",
+      "outputColor": "bright_cyan"
+    },
+    {
+      "type": "os",
+      "key": "║  󰣛 OS",
+      "keyColor": "bright_cyan"
     },
     {
       "type": "host",
-      "key": "│ ├󰌢 Host",
-      "keyColor": "green"
+      "key": "║  󰌢 Machine",
+      "keyColor": "bright_cyan"
+    },
+    {
+      "type": "kernel",
+      "key": "║  󰿀 Kernel",
+      "keyColor": "cyan"
+    },
+    {
+      "type": "uptime",
+      "key": "║  󰅐 Uptime",
+      "keyColor": "bright_cyan"
+    },
+    {
+      "type": "packages",
+      "key": "║  󰏖 Packages",
+      "keyColor": "cyan"
+    },
+    {
+      "type": "locale",
+      "key": "║  󰗊 Locale",
+      "keyColor": "cyan"
+    },
+    {
+      "type": "version",
+      "key": "║  󰊪 Fastfetch",
+      "keyColor": "bright_black"
+    },
+    {
+      "type": "custom",
+      "format": "╚════════════════════════════════════════════════════════════════════════════════╝",
+      "outputColor": "bright_cyan"
+    },
+    {
+      "type": "custom",
+      "format": "  ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·",
+      "outputColor": "bright_black"
+    },
+
+    // ╔═══════════════════════════════ ⚙  Hardware ════════════════════════════╗
+    {
+      "type": "custom",
+      "format": "╔═════════════════════════════════ ⚙   Hardware ═══════════════════════════════╗",
+      "outputColor": "bright_red"
     },
     {
       "type": "cpu",
-      "key": "│ ├󰍛 CPU",
-      "keyColor": "green"
+      "key": "║  󰻠 CPU",
+      "keyColor": "bright_red"
     },
     {
       "type": "gpu",
-      "key": "│ ├󰍛 GPU",
-      "keyColor": "green"
+      "key": "║  󰾲 GPU",
+      "keyColor": "bright_yellow"
     },
     {
       "type": "memory",
-      "key": "│ ├󰍛 Memory",
+      "key": "║  󰍸 Memory",
+      "keyColor": "bright_green"
+    },
+    {
+      "type": "swap",
+      "key": "║  󰘨 Swap",
       "keyColor": "green"
     },
     {
       "type": "disk",
-      "key": "│ ├󰋊 Disk",
-      "keyColor": "green"
+      "key": "║  󰋊 Disk",
+      "keyColor": "bright_red"
     },
     {
       "type": "battery",
-      "key": "└ └󰁹 Battery",
-      "keyColor": "green"
+      "key": "║  󰁹 Battery",
+      "keyColor": "bright_green"
+    },
+    {
+      "type": "command",
+      "key": "║  󰄁 Power",
+      "keyColor": "bright_cyan",
+      "text": "powerprofilesctl get 2>/dev/null || echo 'N/A'"
+    },
+    {
+      "type": "command",
+      "key": "║  󰔏 CPU Temp",
+      "keyColor": "bright_yellow",
+      "text": "sensors 2>/dev/null | awk '/Tdie|Tctl|k10temp-pci/ { for(i=1;i<=NF;i++) if($i~/^\\+[0-9]/) { print $i; exit } }'"
     },
     {
       "type": "custom",
-      "format": "└──────────────────────────────────────────────────────┘",
-      "outputColor": "red"
-    },
-    "break",
-    {
-      "type": "custom",
-      "format": "┌────────────────────── Software ──────────────────────┐",
-      "outputColor": "red"
-    },
-    {
-      "type": "os",
-      "key": " OS",
-      "keyColor": "yellow"
-    },
-    {
-      "type": "kernel",
-      "key": "│ ├ Kernel",
-      "keyColor": "yellow"
-    },
-    {
-      "type": "uptime",
-      "key": "│ ├󰅐 Uptime",
-      "keyColor": "yellow"
-    },
-    {
-      "type": "packages",
-      "key": "│ ├󰏖 Packages",
-      "keyColor": "yellow"
-    },
-    {
-      "type": "version",
-      "key": "└ └󰈙 Fastfetch",
-      "keyColor": "yellow"
+      "format": "╚════════════════════════════════════════════════════════════════════════════════╝",
+      "outputColor": "bright_red"
     },
     {
       "type": "custom",
-      "format": "└──────────────────────────────────────────────────────┘",
-      "outputColor": "red"
+      "format": "  ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·",
+      "outputColor": "bright_black"
     },
-    "break",
+
+    // ╔═══════════════════════════════ 󰇄  Desktop ═════════════════════════════╗
     {
       "type": "custom",
-      "format": "┌────────────────────── Desktop ───────────────────────┐",
-      "outputColor": "red"
+      "format": "╔══════════════════════════════════ 󰇄  Desktop ════════════════════════════════╗",
+      "outputColor": "bright_blue"
     },
     {
       "type": "display",
-      "key": " Display",
-      "keyColor": "blue"
+      "key": "║  󰍹 Display",
+      "keyColor": "bright_blue"
     },
     {
       "type": "de",
-      "key": "│ ├ DE",
-      "keyColor": "blue"
+      "key": "║  󰇄 DE",
+      "keyColor": "bright_blue"
     },
     {
       "type": "wm",
-      "key": "│ ├ WM",
+      "key": "║  󰖲 WM",
       "keyColor": "blue"
     },
     {
       "type": "wmtheme",
-      "key": "│ ├󰉼 WM Theme",
-      "keyColor": "blue"
+      "key": "║  󰉼 WM Theme",
+      "keyColor": "bright_blue"
     },
     {
       "type": "theme",
-      "key": "└ └󰉼 App Theme",
-      "keyColor": "blue"
+      "key": "║  󰠖 App Theme",
+      "keyColor": "bright_magenta"
+    },
+    {
+      "type": "icons",
+      "key": "║  󰀻 Icons",
+      "keyColor": "bright_magenta"
+    },
+    {
+      "type": "cursor",
+      "key": "║  󰳊 Cursor",
+      "keyColor": "magenta"
     },
     {
       "type": "custom",
-      "format": "└──────────────────────────────────────────────────────┘",
-      "outputColor": "red"
+      "format": "╚════════════════════════════════════════════════════════════════════════════════╝",
+      "outputColor": "bright_blue"
     },
-    "break",
     {
       "type": "custom",
-      "format": "┌──────────────────── Terminal Tools ──────────────────┐",
-      "outputColor": "red"
+      "format": "  ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·",
+      "outputColor": "bright_black"
+    },
+
+    // ╔═══════════════════════════════ 󰆍  Terminal ════════════════════════════╗
+    {
+      "type": "custom",
+      "format": "╔═════════════════════════════════ 󰆍  Terminal ════════════════════════════════╗",
+      "outputColor": "bright_green"
     },
     {
       "type": "shell",
-      "key": " Shell",
-      "keyColor": "cyan"
+      "key": "║  󰣮 Shell",
+      "keyColor": "bright_green"
     },
     {
       "type": "terminal",
-      "key": "│ ├ Terminal",
-      "keyColor": "cyan"
+      "key": "║  󰆍 Terminal",
+      "keyColor": "bright_green"
     },
     {
       "type": "terminalfont",
-      "key": "│ ├ Font",
-      "keyColor": "cyan"
+      "key": "║  󰛖 Font",
+      "keyColor": "green"
     },
     {
       "type": "editor",
-      "key": "│ ├ Editor",
-      "keyColor": "cyan"
+      "key": "║  󱃞 Editor",
+      "keyColor": "bright_yellow"
     },
     {
       "type": "command",
-      "key": "│ ├ Starship",
-      "keyColor": "cyan",
-      "text": "starship --version | awk 'NR==1 {print $2}'"
+      "key": "║  ✦ Starship",
+      "keyColor": "bright_cyan",
+      "text": "starship --version 2>/dev/null | awk 'NR==1 {print $2}'"
     },
     {
       "type": "command",
-      "key": "└ └󰛢 Atuin",
-      "keyColor": "cyan",
-      "text": "command -v atuin >/dev/null 2>&1 && atuin --version | awk '{print $2}' || printf 'not installed'"
+      "key": "║  󱋿 Atuin",
+      "keyColor": "bright_magenta",
+      "text": "command -v atuin >/dev/null 2>&1 && atuin --version 2>/dev/null | awk '{print $2}' || echo 'not installed'"
     },
     {
       "type": "custom",
-      "format": "└──────────────────────────────────────────────────────┘",
-      "outputColor": "red"
+      "format": "╚════════════════════════════════════════════════════════════════════════════════╝",
+      "outputColor": "bright_green"
     },
-    "break",
     {
-      "type": "locale",
-      "key": "󰗊 Locale",
-      "keyColor": "red"
+      "type": "custom",
+      "format": "  ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·",
+      "outputColor": "bright_black"
     },
-    "colors"
+
+    // ╔═══════════════════════════════ 󰛳  Network ═════════════════════════════╗
+    {
+      "type": "custom",
+      "format": "╔══════════════════════════════════ 󰛳  Network ════════════════════════════════╗",
+      "outputColor": "bright_yellow"
+    },
+    {
+      "type": "wifi",
+      "key": "║  󰤨 WiFi",
+      "keyColor": "bright_yellow"
+    },
+    {
+      "type": "localip",
+      "showIpv4": true,
+      "showIpv6": false,
+      "key": "║  󰩟 Local IP",
+      "keyColor": "yellow"
+    },
+    {
+      "type": "custom",
+      "format": "╚════════════════════════════════════════════════════════════════════════════════╝",
+      "outputColor": "bright_yellow"
+    },
+    {
+      "type": "custom",
+      "format": "  ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·",
+      "outputColor": "bright_black"
+    },
+
+    // ╔════════════════════════════════ 󰕾  Audio ══════════════════════════════╗
+    {
+      "type": "custom",
+      "format": "╔═══════════════════════════════════ 󰕾  Audio ═════════════════════════════════╗",
+      "outputColor": "bright_magenta"
+    },
+    {
+      "type": "sound",
+      "key": "║  󱡫 Sound",
+      "keyColor": "bright_magenta"
+    },
+    {
+      "type": "media",
+      "key": "║  󰝚 Now Playing",
+      "keyColor": "magenta"
+    },
+    {
+      "type": "custom",
+      "format": "╚════════════════════════════════════════════════════════════════════════════════╝",
+      "outputColor": "bright_magenta"
+    },
+    {
+      "type": "custom",
+      "format": "  ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·",
+      "outputColor": "bright_black"
+    },
+
+    // ╔════════════════════════════════ 󰏘  Colors ═════════════════════════════╗
+    {
+      "type": "custom",
+      "format": "╔══════════════════════════════════ 󰏘  Colors ═════════════════════════════════╗",
+      "outputColor": "white"
+    },
+    "colors",
+    {
+      "type": "custom",
+      "format": "╚════════════════════════════════════════════════════════════════════════════════╝",
+      "outputColor": "white"
+    }
   ]
 }
