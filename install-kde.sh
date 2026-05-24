@@ -221,28 +221,68 @@ disable_network_wait_online() {
 }
 
 fix_panel_alignment() {
-  local layout panel_id icon_id spacer_a spacer_b left_ids right_ids order
-  if ! command_exists qdbus; then
-    SKIPPED+=("qdbus not available for Plasma panel alignment")
+  local bus_cmd layout panel_id icon_id spacer_a spacer_b left_ids right_ids order
+  if command_exists qdbus; then
+    bus_cmd="qdbus"
+  elif command_exists qdbus6; then
+    bus_cmd="qdbus6"
+  else
+    SKIPPED+=("qdbus/qdbus6 not available for Plasma panel alignment")
     return
   fi
   backup_path "$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc"
-  layout="$(qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript '
+  layout="$("$bus_cmd" org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript '
+    function isTaskWidget(type) {
+      return type === "org.kde.plasma.icontasks" ||
+        type === "org.kde.plasma.taskmanager";
+    }
+    function panelTaskId(panel) {
+      for (const wid of panel.widgetIds) {
+        const w = panel.widgetById(wid);
+        if (w && isTaskWidget(w.type)) return wid;
+      }
+      return "";
+    }
+    let target = null;
+    let targetTask = "";
     for (const id of panelIds) {
       const panel = panelById(id);
-      if (!panel || panel.location !== "top") continue;
+      if (!panel) continue;
+      const task = panelTaskId(panel);
+      if (task && panel.location === "top") {
+        target = panel;
+        targetTask = task;
+        break;
+      }
+      if (task && !target) {
+        target = panel;
+        targetTask = task;
+      }
+    }
+    if (!target) {
+      for (const id of panelIds) {
+        const panel = panelById(id);
+        if (panel && panel.location === "top") {
+          target = panel;
+          break;
+        }
+      }
+    }
+    if (!target && panelIds.length > 0) target = panelById(panelIds[0]);
+    if (target) {
+      const panel = target;
       panel.alignment = "left";
       const left = [];
       const right = [];
       const spacers = [];
-      let icon = "";
+      let task = targetTask;
       function isRightWidget(type) {
         return type === "org.kde.plasma.systemtray" ||
           type === "org.kde.plasma.digitalclock" ||
           type === "org.kde.plasma.showdesktop" ||
           type === "org.kde.plasma.weather" ||
           type === "org.kde.plasma.battery" ||
-          type.indexOf("org.kde.plasma.systemmonitor") === 0;
+          (type && type.indexOf("org.kde.plasma.systemmonitor") === 0);
       }
       for (const wid of panel.widgetIds) {
         const w = panel.widgetById(wid);
@@ -255,8 +295,8 @@ fix_panel_alignment() {
           spacers.push(wid);
           continue;
         }
-        if (w.type === "org.kde.plasma.icontasks") {
-          icon = wid;
+        if (isTaskWidget(w.type)) {
+          if (!task) task = wid;
           continue;
         }
         if (isRightWidget(w.type)) {
@@ -269,8 +309,7 @@ fix_panel_alignment() {
         const s = panel.addWidget("org.kde.plasma.panelspacer");
         spacers.push(s.id);
       }
-      print(id + "|" + icon + "|" + spacers[0] + "|" + spacers[1] + "|" + left.join(";") + "|" + right.join(";"));
-      break;
+      print(panel.id + "|" + task + "|" + spacers[0] + "|" + spacers[1] + "|" + left.join(";") + "|" + right.join(";"));
     }
   ' | tail -n 1 || true)"
   IFS='|' read -r panel_id icon_id spacer_a spacer_b left_ids right_ids <<<"$layout"
@@ -279,11 +318,11 @@ fix_panel_alignment() {
     order="${order#;}"
     order="${order%;}"
     kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc --group Containments --group "$panel_id" --group General --key AppletOrder "$order"
-    CHANGED+=("centered Icon Tasks between two Plasma spacers on panel $panel_id")
+    CHANGED+=("centered taskbar launcher widget between two Plasma spacers on panel $panel_id")
   else
-    SKIPPED+=("could not identify top panel/Icon Tasks for centering")
+    SKIPPED+=("could not identify a Plasma panel taskbar widget for centering")
   fi
-  CHANGED+=("set top Plasma panel alignment to left")
+  CHANGED+=("set Plasma panel alignment to left")
   systemctl --user restart plasma-plasmashell.service >/dev/null 2>&1 || true
   CHANGED+=("restarted plasmashell to apply panel layout")
   show_file_diff "$LAST_BACKUP_PATH" "$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc"
@@ -635,9 +674,9 @@ if ask "Disable NetworkManager-wait-online.service to reduce boot wait time?" "n
   disable_network_wait_online
 fi
 
-if ask "Fix Plasma panel alignment so the whole taskbar is not centered?" "y"; then
+if ask "Center taskbar launcher icons while keeping tray/clock on the edge?" "y"; then
   ui_section "Panel Alignment" 2>/dev/null || true
-  printf 'Sets top Plasma panels to left alignment. This does not copy a full panel layout.\n'
+  printf 'Uses Plasma spacers to center Icon Tasks/Task Manager while keeping tray, clock, weather, sensors, and power on the right. This does not copy a full panel layout.\n'
   fix_panel_alignment
 fi
 
