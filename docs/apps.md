@@ -87,6 +87,10 @@ This catalog is intentionally opinionated, reversible, and package-manager first
 | App | Source | What it does |
 | --- | --- | --- |
 | kdeplasma-addons | DNF | Extra Plasma widgets and desktop features. |
+| plasma-systemmonitor | DNF | Plasma system monitor widgets and pages. |
+| ksystemstats | DNF | Sensor backend for Plasma system monitor widgets. |
+| power-profiles-daemon | DNF | Power profile and battery/performance integration. |
+| lm_sensors | DNF | Hardware temperature and sensor detection support. |
 | papirus-icon-theme | DNF | Broad icon theme coverage. |
 | variety | DNF | Wallpaper rotation utility. |
 | qt6-qttools | DNF | Qt tools useful for KDE configuration. |

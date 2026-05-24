@@ -75,11 +75,11 @@ install_kde_packages() {
 }
 
 install_taskbar_widget_packages() {
-  local pkgs=(plasma-desktop plasma-workspace kdeplasma-addons kde-connect kdeconnectd bluedevil) pkg new_pkgs=()
+  local pkgs=(plasma-desktop plasma-workspace kdeplasma-addons plasma-systemmonitor ksystemstats power-profiles-daemon lm_sensors kde-connect kdeconnectd bluedevil) pkg new_pkgs=()
   for pkg in "${pkgs[@]}"; do
     rpm -q "$pkg" >/dev/null 2>&1 || new_pkgs+=("$pkg")
   done
-  sudo "$DNF" install -y "${pkgs[@]}"
+  sudo "$DNF" install -y --skip-unavailable "${pkgs[@]}"
   for pkg in "${new_pkgs[@]}"; do
     rpm -q "$pkg" >/dev/null 2>&1 && record_state dnf "$pkg"
   done
@@ -103,6 +103,69 @@ install_bundled_plasmoids() {
     cp -a "$src" "$target"
     CHANGED+=("installed bundled KDE plasmoid $(basename "$target")")
   done
+}
+
+apply_starter_panel_widgets() {
+  local bus_cmd result
+  if command_exists qdbus; then
+    bus_cmd="qdbus"
+  elif command_exists qdbus6; then
+    bus_cmd="qdbus6"
+  else
+    SKIPPED+=("qdbus/qdbus6 not available for Plasma panel widget preset")
+    return
+  fi
+  backup_path "$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc"
+  result="$("$bus_cmd" org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript '
+    function hasWidget(panel, plugin) {
+      for (const id of panel.widgetIds) {
+        const widget = panel.widgetById(id);
+        if (widget && widget.type === plugin) return true;
+      }
+      return false;
+    }
+    function addIfMissing(panel, plugin) {
+      if (hasWidget(panel, plugin)) return "exists:" + plugin;
+      try {
+        panel.addWidget(plugin);
+        return "added:" + plugin;
+      } catch (error) {
+        return "missing:" + plugin;
+      }
+    }
+    let panel = null;
+    for (const id of panelIds) {
+      const candidate = panelById(id);
+      if (candidate && candidate.location === "top") {
+        panel = candidate;
+        break;
+      }
+    }
+    if (!panel && panelIds.length > 0) panel = panelById(panelIds[0]);
+    if (!panel) {
+      panel = new Panel();
+      panel.location = "top";
+      panel.height = 44;
+    }
+    panel.alignment = "left";
+    const results = [];
+    for (const plugin of [
+      "org.kde.plasma.icontasks",
+      "org.kde.plasma.systemtray",
+      "org.kde.plasma.digitalclock",
+      "org.kde.plasma.weather",
+      "org.kde.plasma.systemmonitor",
+      "org.kde.plasma.battery"
+    ]) {
+      results.push(addIfMissing(panel, plugin));
+    }
+    print(results.join(","));
+  ' | tail -n 1 || true)"
+  CHANGED+=("applied portable Plasma starter panel widgets (${result:-no details})")
+  ui_info "Weather location and sensor readouts still need user review in Plasma edit mode." 2>/dev/null || true
+  systemctl --user restart plasma-plasmashell.service >/dev/null 2>&1 || true
+  CHANGED+=("restarted plasmashell to apply starter panel widgets")
+  show_file_diff "$LAST_BACKUP_PATH" "$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc"
 }
 
 install_bluetooth_headphone_codecs() {
@@ -173,6 +236,14 @@ fix_panel_alignment() {
       const right = [];
       const spacers = [];
       let icon = "";
+      function isRightWidget(type) {
+        return type === "org.kde.plasma.systemtray" ||
+          type === "org.kde.plasma.digitalclock" ||
+          type === "org.kde.plasma.showdesktop" ||
+          type === "org.kde.plasma.weather" ||
+          type === "org.kde.plasma.battery" ||
+          type.indexOf("org.kde.plasma.systemmonitor") === 0;
+      }
       for (const wid of panel.widgetIds) {
         const w = panel.widgetById(wid);
         if (!w) continue;
@@ -188,7 +259,7 @@ fix_panel_alignment() {
           icon = wid;
           continue;
         }
-        if (w.type === "org.kde.plasma.systemtray" || w.type === "org.kde.plasma.digitalclock" || w.type === "org.kde.plasma.showdesktop") {
+        if (isRightWidget(w.type)) {
           right.push(wid);
           continue;
         }
@@ -403,6 +474,18 @@ apply_theme_preferences() {
     SKIPPED+=("kwriteconfig6 not available for theme preferences")
     return
   fi
+  backup_path "$HOME/.config/kdeglobals"
+  kwriteconfig6 --file kdeglobals --group General --key ColorScheme Sweet
+  kwriteconfig6 --file kdeglobals --group Icons --key Theme Papirus-Dark
+  kwriteconfig6 --file kdeglobals --group KDE --key widgetStyle Breeze
+  CHANGED+=("applied Sweet color scheme, Papirus-Dark icons, and Breeze widget style")
+  show_file_diff "$LAST_BACKUP_PATH" "$HOME/.config/kdeglobals"
+
+  backup_path "$HOME/.config/plasmarc"
+  kwriteconfig6 --file plasmarc --group Theme --key name Sweet
+  CHANGED+=("applied Sweet Plasma desktop theme preference")
+  show_file_diff "$LAST_BACKUP_PATH" "$HOME/.config/plasmarc"
+
   backup_path "$HOME/.config/kwinrc"
   kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key library org.kde.kwin.aurorae.v2
   kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key theme __aurorae__svg__Sweet-Dark-transparent
@@ -529,6 +612,12 @@ if ask "Install bundled KDE widgets such as Panel Colorizer if missing?" "y"; th
   install_bundled_plasmoids
 fi
 
+if ask "Apply portable starter panel widgets for taskbar, weather, sensors, and power?" "n"; then
+  ui_section "Starter Panel Widgets" 2>/dev/null || true
+  printf 'Adds portable widgets only. Weather location, sensor choices, and exact panel layout remain user-specific.\n'
+  apply_starter_panel_widgets
+fi
+
 if ask "Install Bluetooth headphone codec/support packages?" "y"; then
   ui_section "Bluetooth Audio" 2>/dev/null || true
   printf 'Includes PipeWire/WirePlumber, BlueZ/Bluedevil, LDAC, aptX, AAC, FFmpeg, OpenH264, and GStreamer codec support where available.\n'
@@ -562,7 +651,7 @@ if ask "Install downloaded KDE themes from this kit without overwriting existing
   install_downloaded_themes
 fi
 
-if ask "Apply Sweet-Dark-transparent KWin decoration preference?" "n"; then
+if ask "Apply starter KDE theme preferences?" "y"; then
   apply_theme_preferences
 fi
 

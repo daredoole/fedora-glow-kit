@@ -184,6 +184,7 @@ See `docs/` for Fedora 44 KDE Plasma recommendations, app choices, security mode
 - Podman, podman-compose, distrobox
 - direnv and just
 - Flatpak and optional Flathub setup
+- optional `zsh` default login shell setup
 - shell aliases/functions
 - optional Firefox `user.js`
 - optional Firefox extension policy
@@ -211,6 +212,7 @@ The recommended simple editor path is KWrite plus FeatherPad. They open quickly,
 - variety
 - qt6-qttools
 - Plasma taskbar/widget support packages
+- optional portable starter panel widgets for Icon Tasks, tray, clock, weather placeholder, system monitor sensors, and battery/power
 - KDE Connect tray integration
 - Bluedevil Bluetooth tray support
 - optional Bluetooth/headphone codec support
@@ -295,7 +297,9 @@ Downloaded non-default themes included:
 
 Theme install is non-destructive: existing target paths are skipped, not overwritten.
 
-Panel/taskbar layout files are not copied because Plasma panel config is monitor and user specific. The kit installs useful widget support instead: Icon Tasks, KDE Connect, Bluetooth/Bluedevil, media/volume, clipboard, device notifier, weather support, activity pager, Panel Colorizer, and KDE add-ons.
+Panel/taskbar layout files are not copied wholesale because Plasma panel config is monitor and user specific. The kit installs useful widget support instead: Icon Tasks, KDE Connect, Bluetooth/Bluedevil, media/volume, clipboard, device notifier, weather support, system monitor/sensor support, battery/power support, activity pager, Panel Colorizer, and KDE add-ons.
+
+The KDE installer includes an optional portable starter panel widget preset. It can add generic widgets for Icon Tasks, system tray, clock, weather, system monitor sensors, and battery/power. It does not set a private weather location, sensor source, screen ID, or exact personal applet layout; those stay user-reviewed in Plasma edit mode.
 
 The KDE installer includes an optional Panel Colorizer pass. It does not copy a full personal panel layout. It makes empty spacer widgets transparent, increases colorized widget island spacing/margins so icons are not tight against rounded borders, softens island opacity/borders, and keeps the center Icon Tasks launcher icons full size with a narrower vertical margin override.
 
