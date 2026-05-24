@@ -52,6 +52,31 @@ add_pkg_if_missing() {
   fi
 }
 
+set_default_zsh_shell() {
+  local zsh_path current_shell
+  zsh_path="$(command -v zsh || true)"
+  if [ -z "$zsh_path" ]; then
+    SKIPPED+=("zsh default shell because zsh is not installed")
+    return
+  fi
+  current_shell="$(getent passwd "$USER" | awk -F: '{print $7}')"
+  if [ "$current_shell" = "$zsh_path" ]; then
+    SKIPPED+=("zsh is already the default shell")
+    return
+  fi
+  if ! grep -Fxq "$zsh_path" /etc/shells 2>/dev/null; then
+    SKIPPED+=("$zsh_path is not listed in /etc/shells; not changing login shell")
+    return
+  fi
+  if ask "Set zsh as the default login shell for $USER?" "y"; then
+    sudo chsh -s "$zsh_path" "$USER"
+    CHANGED+=("set default login shell to $zsh_path")
+    ui_info "Log out and back in for the default shell change to take effect." 2>/dev/null || true
+  else
+    SKIPPED+=("zsh default shell")
+  fi
+}
+
 backup_path() {
   local target="$1"
   LAST_BACKUP_PATH=""
@@ -178,6 +203,8 @@ if [ "${#MISSING_PKGS[@]}" -gt 0 ] && ask "Install core CLI/dev packages?" "y"; 
 else
   SKIPPED+=("core package installation skipped or all core commands already present")
 fi
+
+set_default_zsh_shell
 
 if ask "Install shell aliases and functions?" "y"; then
   ui_section "Shell Helpers" 2>/dev/null || true
