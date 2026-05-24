@@ -1,12 +1,34 @@
-# Safe starter zsh config for Fedora.
+# Fedora Starter Kit zsh profile.
+# Portable shell polish; private paths and machine-specific aliases live elsewhere.
 
 export EDITOR="${EDITOR:-nano}"
 export PAGER="${PAGER:-less}"
+
+HISTFILE="${HISTFILE:-$HOME/.zsh_history}"
+HISTSIZE=10000
+SAVEHIST=10000
+setopt append_history
+setopt share_history
+setopt hist_ignore_dups
+setopt hist_ignore_space
+setopt hist_reduce_blanks
+setopt inc_append_history
+setopt auto_cd
+setopt interactive_comments
+
+mkdir -p "$HOME/.cache/zsh"
+autoload -Uz compinit
+compinit -d "$HOME/.cache/zsh/zcompdump"
 
 if [ -d "$HOME/.local/bin" ]; then
   path=("$HOME/.local/bin" $path)
 fi
 
+if [ -d "$HOME/bin" ]; then
+  path=("$HOME/bin" $path)
+fi
+
+# fedora-plasma-glow-kit shell helpers
 if [ -f "$HOME/.config/shell/aliases.sh" ]; then
   . "$HOME/.config/shell/aliases.sh"
 fi
@@ -23,10 +45,39 @@ if command -v direnv >/dev/null 2>&1; then
   eval "$(direnv hook zsh)"
 fi
 
+if command -v atuin >/dev/null 2>&1; then
+  eval "$(atuin init zsh --disable-up-arrow)"
+fi
+
 if command -v fzf >/dev/null 2>&1; then
   [ -f /usr/share/fzf/shell/key-bindings.zsh ] && . /usr/share/fzf/shell/key-bindings.zsh
   [ -f /usr/share/fzf/shell/completion.zsh ] && . /usr/share/fzf/shell/completion.zsh
 fi
+
+for plugin in \
+  /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
+  /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+  /usr/share/zsh-history-substring-search/zsh-history-substring-search.zsh
+do
+  [ -r "$plugin" ] && . "$plugin"
+done
+
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="${ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE:-fg=8}"
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+
+if (( $+functions[history-substring-search-up] )); then
+  bindkey '^[[A' history-substring-search-up
+  bindkey '^[[B' history-substring-search-down
+fi
+
+zstyle ':completion:*:git-checkout:*' sort false
+zstyle ':completion:*:descriptions' format '[%d]'
+if [ -n "${LS_COLORS:-}" ]; then
+  zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+fi
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -l --icons --color=always $realpath 2>/dev/null'
+zstyle ':fzf-tab:complete:ls:*' fzf-preview 'eza -l --icons --color=always $realpath 2>/dev/null'
+zstyle ':fzf-tab:*' switch-group '<' '>'
 
 if command -v starship >/dev/null 2>&1; then
   eval "$(starship init zsh)"

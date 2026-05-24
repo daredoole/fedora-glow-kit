@@ -52,6 +52,15 @@ add_pkg_if_missing() {
   fi
 }
 
+add_rpm_if_missing() {
+  local pkg="$1"
+  if rpm -q "$pkg" >/dev/null 2>&1; then
+    SKIPPED+=("$pkg already present")
+  else
+    MISSING_PKGS+=("$pkg")
+  fi
+}
+
 set_default_zsh_shell() {
   local zsh_path current_shell
   zsh_path="$(command -v zsh || true)"
@@ -149,6 +158,9 @@ fedora_hardware_preflight
 
 MISSING_PKGS=()
 add_pkg_if_missing zsh zsh
+add_rpm_if_missing zsh-autosuggestions
+add_rpm_if_missing zsh-syntax-highlighting
+add_rpm_if_missing zsh-history-substring-search
 add_pkg_if_missing firefox firefox
 add_pkg_if_missing direnv direnv
 add_pkg_if_missing starship starship
@@ -223,6 +235,13 @@ if ask "Install terminal prompt, zellij, and fastfetch configs?" "y"; then
   install_file "$ROOT_DIR/configs/fastfetch/dog.png" "$HOME/.config/fastfetch/dog.png"
 else
   SKIPPED+=("terminal prompt/zellij/fastfetch configs")
+fi
+
+if ask "Install starter zsh profile to ~/.zshrc?" "y"; then
+  ui_section "Zsh Profile" 2>/dev/null || true
+  install_file "$ROOT_DIR/configs/zshrc.sample" "$HOME/.zshrc"
+else
+  SKIPPED+=("starter zsh profile")
 fi
 
 if [ -f "$ROOT_DIR/configs/kitty/kitty.conf" ] && ask "Install sanitized kitty config?" "n"; then
