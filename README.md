@@ -314,6 +314,7 @@ The KDE installer can optionally disable `NetworkManager-wait-online.service`. T
 The scripts are designed to be idempotent and non-destructive:
 
 - already-installed commands are skipped
+- unavailable Fedora packages are skipped instead of failing the whole setup
 - existing dotfiles are backed up before replacement
 - most config writes require confirmation
 - config changes show a unified diff as they happen

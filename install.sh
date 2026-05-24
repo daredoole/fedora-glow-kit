@@ -164,11 +164,16 @@ add_pkg_if_missing distrobox distrobox
 if [ "${#MISSING_PKGS[@]}" -gt 0 ] && ask "Install core CLI/dev packages?" "y"; then
   mapfile -t UNIQUE_PKGS < <(printf '%s\n' "${MISSING_PKGS[@]}" | sort -u)
   ui_section "Packages" 2>/dev/null || true
-  ui_info "Packages to install: ${UNIQUE_PKGS[*]}" 2>/dev/null || echo "Packages to install: ${UNIQUE_PKGS[*]}"
-  sudo "$DNF" install -y "${UNIQUE_PKGS[@]}"
-  INSTALLED+=("${UNIQUE_PKGS[@]}")
+  ui_info "Packages to attempt: ${UNIQUE_PKGS[*]}" 2>/dev/null || echo "Packages to attempt: ${UNIQUE_PKGS[*]}"
+  ui_info "Using --skip-unavailable so one missing Fedora package does not stop the whole setup." 2>/dev/null || true
+  sudo "$DNF" install -y --skip-unavailable "${UNIQUE_PKGS[@]}"
   for pkg in "${UNIQUE_PKGS[@]}"; do
-    record_state dnf "$pkg"
+    if rpm -q "$pkg" >/dev/null 2>&1; then
+      record_state dnf "$pkg"
+      INSTALLED+=("$pkg")
+    else
+      SKIPPED+=("$pkg unavailable or not installed")
+    fi
   done
 else
   SKIPPED+=("core package installation skipped or all core commands already present")
