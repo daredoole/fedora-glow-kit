@@ -8,7 +8,10 @@ This catalog is intentionally opinionated, reversible, and package-manager first
 | --- | --- | --- |
 | Firefox | DNF | Web browser used for the optional hardened policy/user.js setup. |
 | zsh | DNF | Interactive shell with strong completion and plugin support. |
-| starship | DNF | Fast cross-shell prompt. |
+| zsh-autosuggestions | DNF | Inline command suggestions from history and completions. |
+| zsh-syntax-highlighting | DNF | Live shell command syntax highlighting. |
+| zsh-history-substring-search | DNF | Up/down history search using the typed prefix. |
+| starship | DNF | Fast cross-shell prompt; the kit ships a Powerline/Nerd Font theme. |
 | zellij | DNF | Terminal workspace, panes, and sessions. |
 | fastfetch | DNF | System summary for terminal screenshots and diagnostics. |
 | ripgrep (`rg`) | DNF | Fast recursive text search. |
