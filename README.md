@@ -174,7 +174,7 @@ See `docs/` for Fedora 44 KDE Plasma recommendations, app choices, security mode
 
 `install.sh` installs the core command-line setup and optional safe configs:
 
-- zsh, starship, zellij, fastfetch
+- zsh, zsh autosuggestions/syntax/history helpers, starship, zellij, fastfetch
 - ripgrep (`rg`), fd, bat, eza, fzf, zoxide
 - jq, yq, btop, tree, tealdeer/tldr
 - git, GitHub CLI, git-delta, git-lfs
@@ -185,10 +185,13 @@ See `docs/` for Fedora 44 KDE Plasma recommendations, app choices, security mode
 - direnv and just
 - Flatpak and optional Flathub setup
 - optional `zsh` default login shell setup
+- optional polished starter `~/.zshrc` profile with history, completion, fzf, zoxide, direnv, Atuin, zsh plugin, and Starship hooks
 - shell aliases/functions
 - optional Firefox `user.js`
 - optional Firefox extension policy
-- optional kitty, Konsole, starship, zellij, and fastfetch configs
+- optional kitty, Konsole, Powerline-style starship, zellij, and fastfetch configs
+
+The shipped Starship prompt uses a Powerline/Nerd Font style with colored segments for user, directory, Git, active language runtimes, Docker context, and time. Install or select a Nerd Font in your terminal for the icons and separators to render correctly.
 
 `install-extras.sh` installs optional heavier tools and app groups:
 
