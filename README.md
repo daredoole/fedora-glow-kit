@@ -248,12 +248,17 @@ It does not silently enable disruptive USB blocking or firewall lockdowns.
 
 No AI API keys, account files, tokens, prompts, histories, or tool state are copied.
 
-`manage.sh` runs the sections in a sensible order and asks what to do at each step:
+`manage.sh` opens a keyboard-driven setup menu when run in an interactive terminal:
 
-- Space or Enter: install/setup that section
-- `r`: revert/uninstall kit-managed changes for that section
-- `s`: skip that section
+- Up/Down or `j`/`k`: move through sections
+- Space: select or unselect a section
+- Enter: run selected sections
+- `p`: cycle starter profiles such as daily, dev, KDE polish, and full-send
+- `a` / `n`: select all or none
+- `r`: revert/uninstall kit-managed changes for the highlighted section
 - `q`: quit
+
+Non-interactive shells keep the plain guided fallback, and flags such as `--profile`, `--section`, `--dry-run`, `--yes`, and `--no` still work for scripts and repeatable installs.
 
 `revert.sh` restores config backups or removes config files that still match the kit copy. It only prompts to uninstall DNF, Flatpak, npm, and COPR entries recorded as installed or enabled by this kit, so it avoids removing tools the user already had.
 
