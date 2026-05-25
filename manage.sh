@@ -9,6 +9,22 @@ SECTION=""
 REVERT_SECTION=""
 RUN_AUDIT=0
 
+SECTION_IDS=(core extras kde ai security)
+SECTION_TITLES=(
+  "Core CLI and Shell"
+  "Optional Apps and Extras"
+  "KDE Plasma Desktop Customization"
+  "AI CLI Tools"
+  "Security Best Practices"
+)
+SECTION_DESCRIPTIONS=(
+  "Portable command-line baseline, aliases, functions, prompt, zellij, fastfetch, optional Firefox, and optional terminal configs."
+  "Optional editors, terminal apps, monitoring tools, terminal art, Flatpak app groups, RPM Fusion media tools, and daily-use apps."
+  "KDE packages, lightweight theme assets, Panel Colorizer tuning, optional Rounded Corners, reviewed hotkeys, KWin plugins, and Konsole profile."
+  "Opt-in AI terminal tools like Codex CLI and Claude Code without copying API keys, account files, prompts, histories, or tool state."
+  "Firewall, update hygiene, optional USBGuard review, dnf-automatic, Flatpak permission review, and other safe baseline checks."
+)
+
 # shellcheck source=/dev/null
 # shellcheck disable=SC1091
 [ -f "$ROOT_DIR/shell/ui.sh" ] && . "$ROOT_DIR/shell/ui.sh"
@@ -118,6 +134,17 @@ run_section_by_id() {
   esac
 }
 
+section_index_by_id() {
+  local id="$1" i
+  for i in "${!SECTION_IDS[@]}"; do
+    [ "${SECTION_IDS[$i]}" = "$id" ] && {
+      printf '%s\n' "$i"
+      return 0
+    }
+  done
+  return 1
+}
+
 profile_sections() {
   case "$1" in
   minimal) printf '%s\n' core security ;;
@@ -134,6 +161,153 @@ profile_sections() {
     exit 1
     ;;
   esac
+}
+
+profile_label() {
+  case "$1" in
+  minimal) printf 'Minimal' ;;
+  daily) printf 'Daily desktop' ;;
+  dev) printf 'Developer' ;;
+  kde-polish) printf 'KDE polish only' ;;
+  media) printf 'Media desktop' ;;
+  gaming) printf 'Gaming desktop' ;;
+  privacy) printf 'Privacy baseline' ;;
+  ai) printf 'AI CLI' ;;
+  full-send) printf 'Full send' ;;
+  *) printf '%s' "$1" ;;
+  esac
+}
+
+set_selected_profile() {
+  local profile="$1" id idx
+  SELECTED=()
+  for idx in "${!SECTION_IDS[@]}"; do
+    SELECTED[idx]=0
+  done
+  while IFS= read -r id; do
+    [ -n "$id" ] || continue
+    idx="$(section_index_by_id "$id")" || continue
+    SELECTED[idx]=1
+  done < <(profile_sections "$profile")
+}
+
+render_section_picker() {
+  local cursor="$1" profile="$2" i mark pointer label
+  printf '\033[?25l'
+  printf '\033[H\033[2J'
+  ui_title "Fedora Plasma Glow Kit Guided Setup" 2>/dev/null || printf 'Fedora Plasma Glow Kit Guided Setup\n'
+  printf '\nChoose what to run. Use arrows or j/k to move, Space to toggle, Enter to run.\n'
+  printf 'Profile: %s\n\n' "$(profile_label "$profile")"
+  for i in "${!SECTION_IDS[@]}"; do
+    mark=" "
+    [ "${SELECTED[$i]:-0}" -eq 1 ] && mark="x"
+    pointer=" "
+    [ "$i" -eq "$cursor" ] && pointer=">"
+    label="${SECTION_TITLES[$i]}"
+    printf ' %s [%s] %-34s %s\n' "$pointer" "$mark" "$label" "${SECTION_DESCRIPTIONS[$i]}"
+  done
+  printf '\n'
+  printf 'Controls: ↑/↓ move  Space toggle  Enter run  p profile  a all  n none  r revert highlighted  q quit\n'
+  if [ "$DRY_RUN" -eq 1 ]; then
+    printf 'Mode: dry-run, no system changes will be made.\n'
+  fi
+}
+
+read_menu_key() {
+  local key rest
+  IFS= read -r -s -n 1 key || {
+    printf 'enter\n'
+    return
+  }
+  if [ "$key" = $'\033' ]; then
+    IFS= read -r -s -n 2 -t 0.05 rest || true
+    case "$rest" in
+    "[A") printf 'up\n' ;;
+    "[B") printf 'down\n' ;;
+    *) printf 'escape\n' ;;
+    esac
+    return
+  fi
+  case "$key" in
+  "") printf 'enter\n' ;;
+  " ") printf 'space\n' ;;
+  k | K) printf 'up\n' ;;
+  j | J) printf 'down\n' ;;
+  p | P) printf 'profile\n' ;;
+  a | A) printf 'all\n' ;;
+  n | N) printf 'none\n' ;;
+  r | R) printf 'revert\n' ;;
+  q | Q) printf 'quit\n' ;;
+  *) printf 'other\n' ;;
+  esac
+}
+
+section_picker() {
+  local cursor=0 key idx profile_idx=1
+  local profiles=(minimal daily dev kde-polish media gaming privacy ai full-send)
+  set_selected_profile daily
+  trap 'printf "\033[?25h\n"' EXIT
+  while true; do
+    render_section_picker "$cursor" "${profiles[$profile_idx]}"
+    key="$(read_menu_key)"
+    case "$key" in
+    up)
+      if [ "$cursor" -eq 0 ]; then
+        cursor=$((${#SECTION_IDS[@]} - 1))
+      else
+        cursor=$((cursor - 1))
+      fi
+      ;;
+    down)
+      cursor=$(((cursor + 1) % ${#SECTION_IDS[@]}))
+      ;;
+    space)
+      if [ "${SELECTED[$cursor]:-0}" -eq 1 ]; then
+        SELECTED[cursor]=0
+      else
+        SELECTED[cursor]=1
+      fi
+      ;;
+    profile)
+      profile_idx=$(((profile_idx + 1) % ${#profiles[@]}))
+      set_selected_profile "${profiles[$profile_idx]}"
+      ;;
+    all)
+      for idx in "${!SECTION_IDS[@]}"; do
+        SELECTED[idx]=1
+      done
+      ;;
+    none)
+      for idx in "${!SECTION_IDS[@]}"; do
+        SELECTED[idx]=0
+      done
+      ;;
+    revert)
+      printf '\033[?25h\033[H\033[2J'
+      run_cmd "Revert ${SECTION_IDS[$cursor]}" bash "$ROOT_DIR/revert.sh" "${SECTION_IDS[$cursor]}"
+      trap - EXIT
+      return 0
+      ;;
+    enter)
+      printf '\033[?25h\033[H\033[2J'
+      trap - EXIT
+      local ran=0
+      for idx in "${!SECTION_IDS[@]}"; do
+        if [ "${SELECTED[$idx]:-0}" -eq 1 ]; then
+          run_section_by_id "${SECTION_IDS[$idx]}"
+          ran=1
+        fi
+      done
+      [ "$ran" -eq 1 ] || ui_info "No sections selected." 2>/dev/null || true
+      return 0
+      ;;
+    quit | escape)
+      printf '\033[?25h\033[H\033[2J'
+      trap - EXIT
+      return 0
+      ;;
+    esac
+  done
 }
 
 choose_action() {
@@ -192,6 +366,11 @@ if [ -n "$PROFILE" ]; then
     [ -n "$id" ] || continue
     run_section_by_id "$id"
   done < <(profile_sections "$PROFILE")
+  exit 0
+fi
+
+if [ -t 0 ] && [ -t 1 ]; then
+  section_picker
   exit 0
 fi
 
