@@ -5,7 +5,7 @@ Detected source panel:
 - Panel containment ID: `2`
 - Problem found: panel alignment was set to `center`
 - Effect: all panel contents were centered as a group, including launcher widgets and right-side status/tray widgets
-- Live fix applied on source machine: set panel alignment to `left`, remove the margin separator that consumed expansion space, and place Icon Tasks between two Plasma panel spacers
+- Portable fix applied by the installer: set panel alignment to `left`, remove the margin separator that consumed expansion space, and place Icon Tasks or Task Manager between two Plasma panel spacers
 
 Detected applet order:
 

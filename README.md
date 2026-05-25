@@ -223,7 +223,7 @@ The recommended simple editor path is KWrite plus FeatherPad. They open quickly,
 - optional third-party KWin Rounded Corners effect through `matinlotfali/KDE-Rounded-Corners`, off by default
 - KDE animation speed factor `0.35`
 - optional NetworkManager wait-online disable prompt for faster boots
-- optional Plasma panel launcher-centering fix: left widgets stay left, Icon Tasks are centered between spacers, tray/clock stay right
+- optional Plasma panel launcher-centering fix: left widgets stay left, Icon Tasks or Task Manager are centered between spacers, tray/clock stay right
 - optional bundled Panel Colorizer widget install, skipped when already present
 - optional Panel Colorizer tuning for transparent empty spacers, larger colorized widget margins, and translucent island borders/backgrounds
 - optional Sweet-Dark-transparent Aurorae window decoration
