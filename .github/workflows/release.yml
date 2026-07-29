@@ -43,8 +43,9 @@ jobs:
           gpg --batch --import "$RUNNER_TEMP/rpm-signing.key"
           printf '%%_signature gpg\n%%_gpg_name %s\n' "$RPM_SIGNING_KEY_ID" > "$HOME/.rpmmacros"
           find dist/rpm dist/srpm -name '*.rpm' -print0 | xargs -0 rpmsign --addsign
-          find dist/rpm dist/srpm -name '*.rpm' -print0 | xargs -0 -n1 rpm --checksig
           gpg --batch --armor --export "$RPM_SIGNING_KEY_ID" > dist/fedora-glow-kit-release-key.asc
+          rpmkeys --import dist/fedora-glow-kit-release-key.asc
+          find dist/rpm dist/srpm -name '*.rpm' -print0 | xargs -0 -n1 rpm --checksig
           rm -f "$RUNNER_TEMP/rpm-signing.key"
 
       - name: Refresh signed checksums
