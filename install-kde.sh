@@ -6,12 +6,13 @@ DNF="${DNF:-dnf}"
 CHANGED=()
 SKIPPED=()
 LAST_BACKUP_PATH=""
-STATE_DIR="$HOME/.local/state/fedora-plasma-glow-kit"
-STATE_FILE="$STATE_DIR/install.state"
 
 # shellcheck source=/dev/null
 # shellcheck disable=SC1091
 [ -f "$ROOT_DIR/shell/ui.sh" ] && . "$ROOT_DIR/shell/ui.sh"
+# shellcheck source=/dev/null
+# shellcheck disable=SC1091
+[ -f "$ROOT_DIR/lib/state.sh" ] && . "$ROOT_DIR/lib/state.sh"
 ui_intro 2>/dev/null || true
 ui_title "Fedora Plasma Glow Kit KDE" 2>/dev/null || echo "Fedora Plasma Glow Kit KDE"
 
@@ -34,12 +35,6 @@ fedora_hardware_preflight
 
 command_exists() {
   command -v "$1" >/dev/null 2>&1
-}
-
-record_state() {
-  local key="$1" value="$2"
-  mkdir -p "$STATE_DIR"
-  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >>"$STATE_FILE"
 }
 
 backup_path() {
@@ -67,9 +62,13 @@ install_kde_packages() {
   for pkg in "${pkgs[@]}"; do
     rpm -q "$pkg" >/dev/null 2>&1 || new_pkgs+=("$pkg")
   done
-  sudo "$DNF" install -y "${pkgs[@]}"
+  dnf_install_tracked "$DNF" install -y "${pkgs[@]}"
   for pkg in "${new_pkgs[@]}"; do
-    rpm -q "$pkg" >/dev/null 2>&1 && record_state dnf "$pkg"
+    if rpm -q "$pkg" >/dev/null 2>&1; then
+      record_state dnf "$pkg"
+    else
+      SKIPPED+=("$pkg unavailable from enabled repositories")
+    fi
   done
   CHANGED+=("installed KDE customization packages")
 }
@@ -79,9 +78,13 @@ install_taskbar_widget_packages() {
   for pkg in "${pkgs[@]}"; do
     rpm -q "$pkg" >/dev/null 2>&1 || new_pkgs+=("$pkg")
   done
-  sudo "$DNF" install -y --skip-unavailable "${pkgs[@]}"
+  dnf_install_tracked "$DNF" install -y --skip-unavailable "${pkgs[@]}"
   for pkg in "${new_pkgs[@]}"; do
-    rpm -q "$pkg" >/dev/null 2>&1 && record_state dnf "$pkg"
+    if rpm -q "$pkg" >/dev/null 2>&1; then
+      record_state dnf "$pkg"
+    else
+      SKIPPED+=("$pkg unavailable from enabled repositories")
+    fi
   done
   CHANGED+=("installed KDE taskbar/widget packages")
 }
@@ -169,20 +172,28 @@ apply_starter_panel_widgets() {
 }
 
 install_bluetooth_headphone_codecs() {
-  local pkgs=(bluez bluedevil pipewire pipewire-pulseaudio pipewire-alsa wireplumber libldac libfreeaptx fdk-aac-free ffmpeg gstreamer1-plugin-openh264 gstreamer1-plugins-bad-freeworld gstreamer1-plugins-ugly) pkg new_pkgs=()
+  local pkgs=(bluez bluedevil pipewire pipewire-pulseaudio pipewire-alsa wireplumber libldac libfreeaptx fdk-aac-free ffmpeg gstreamer1-plugin-openh264 gstreamer1-plugins-bad-freeworld gstreamer1-plugins-ugly) pkg new_pkgs=() bluetooth_was_enabled=0
   for pkg in "${pkgs[@]}"; do
     rpm -q "$pkg" >/dev/null 2>&1 || new_pkgs+=("$pkg")
   done
-  sudo "$DNF" install -y --skip-unavailable "${pkgs[@]}"
+  dnf_install_tracked "$DNF" install -y --skip-unavailable "${pkgs[@]}"
   for pkg in "${new_pkgs[@]}"; do
-    rpm -q "$pkg" >/dev/null 2>&1 && record_state dnf "$pkg"
+    if rpm -q "$pkg" >/dev/null 2>&1; then
+      record_state dnf "$pkg"
+    else
+      SKIPPED+=("$pkg unavailable from enabled repositories")
+    fi
   done
-  sudo systemctl enable --now bluetooth || true
+  systemctl is-enabled --quiet bluetooth 2>/dev/null && bluetooth_was_enabled=1
+  if sudo systemctl enable --now bluetooth; then
+    [ "$bluetooth_was_enabled" -eq 1 ] || record_state service bluetooth
+  fi
   CHANGED+=("installed Bluetooth/headphone audio packages and enabled bluetooth")
 }
 
 install_rounded_corners_effect() {
-  local pkg="kwin-effect-roundedcorners" repo="matinlotfali/KDE-Rounded-Corners" was_installed=0 repo_was_enabled=0
+  local pkg="kwin-effect-roundedcorners" repo="matinlotfali/KDE-Rounded-Corners"
+  local was_installed=0 repo_was_enabled=0 repo_added=0
   ui_warn "Rounded Corners is provided by a third-party COPR, not the Fedora base repositories." 2>/dev/null || true
   printf 'COPR to enable: %s\nPackage to install: %s\n' "$repo" "$pkg"
   if ! ask "Enable this COPR and install the KWin Rounded Corners effect?" "n"; then
@@ -194,27 +205,48 @@ install_rounded_corners_effect() {
     return
   fi
   rpm -q "$pkg" >/dev/null 2>&1 && was_installed=1
+  if [ "$was_installed" -eq 1 ]; then
+    SKIPPED+=("$pkg already installed")
+    return
+  fi
   if "$DNF" copr list 2>/dev/null | grep -Fqx "copr.fedorainfracloud.org/$repo"; then
     repo_was_enabled=1
   fi
   if [ "$repo_was_enabled" -eq 0 ]; then
     sudo "$DNF" -y copr enable "$repo"
-    record_state copr "$repo"
-    CHANGED+=("enabled COPR $repo")
+    repo_added=1
   fi
-  sudo "$DNF" install -y "$pkg"
+  dnf_install_tracked "$DNF" install -y --skip-unavailable "$pkg"
   if [ "$was_installed" -eq 0 ] && rpm -q "$pkg" >/dev/null 2>&1; then
     record_state dnf "$pkg"
+    if [ "$repo_added" -eq 1 ]; then
+      record_state copr "$repo"
+      CHANGED+=("enabled COPR $repo")
+    fi
+    CHANGED+=("installed KWin Rounded Corners effect")
+    SKIPPED+=("Rounded Corners effect may still need enabling in System Settings > Window Management > Desktop Effects")
+    return
   fi
-  CHANGED+=("installed KWin Rounded Corners effect")
-  SKIPPED+=("Rounded Corners effect may still need enabling in System Settings > Window Management > Desktop Effects")
+  if [ "$repo_added" -eq 1 ]; then
+    if ! sudo "$DNF" -y copr remove "$repo"; then
+      record_state copr "$repo"
+      SKIPPED+=("$pkg unavailable; newly enabled COPR could not be removed and remains managed")
+      return
+    fi
+  fi
+  SKIPPED+=("$pkg unavailable for this Fedora release; COPR was not retained")
 }
 
 disable_network_wait_online() {
   ui_warn "This can speed up boot, but may affect services that require network-online.target at boot." 2>/dev/null || true
   if systemctl list-unit-files NetworkManager-wait-online.service >/dev/null 2>&1; then
-    sudo systemctl disable NetworkManager-wait-online.service
-    CHANGED+=("disabled NetworkManager-wait-online.service")
+    if systemctl is-enabled --quiet NetworkManager-wait-online.service 2>/dev/null; then
+      sudo systemctl disable NetworkManager-wait-online.service
+      record_state disabled_service NetworkManager-wait-online.service
+      CHANGED+=("disabled NetworkManager-wait-online.service")
+    else
+      SKIPPED+=("NetworkManager-wait-online.service already disabled")
+    fi
   else
     SKIPPED+=("NetworkManager-wait-online.service not found")
   fi

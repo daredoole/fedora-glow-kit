@@ -8,6 +8,9 @@ SKIPPED=()
 # shellcheck source=/dev/null
 # shellcheck disable=SC1091
 [ -f "$ROOT_DIR/shell/ui.sh" ] && . "$ROOT_DIR/shell/ui.sh"
+# shellcheck source=/dev/null
+# shellcheck disable=SC1091
+[ -f "$ROOT_DIR/lib/state.sh" ] && . "$ROOT_DIR/lib/state.sh"
 ui_intro 2>/dev/null || true
 ui_title "Fedora Plasma Glow Kit AI Tools" 2>/dev/null || echo "Fedora Plasma Glow Kit AI Tools"
 
@@ -30,12 +33,6 @@ fedora_hardware_preflight
 
 command_exists() {
   command -v "$1" >/dev/null 2>&1
-}
-
-record_state() {
-  local key="$1" value="$2" state_dir="$HOME/.local/state/fedora-starter-kit"
-  mkdir -p "$state_dir"
-  grep -Fqx "$key=$value" "$state_dir/install.state" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >>"$state_dir/install.state"
 }
 
 install_npm_global_if_missing() {

@@ -2,12 +2,13 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ASSUME=""
+ASSUME="${FEDORA_PLASMA_GLOW_ASSUME:-}"
 DRY_RUN=0
 PROFILE=""
 SECTION=""
 REVERT_SECTION=""
 RUN_AUDIT=0
+DESKTOP="auto"
 
 SECTION_IDS=(core extras kde ai security)
 SECTION_TITLES=(
@@ -37,6 +38,7 @@ Usage:
   bash manage.sh                         Interactive guided setup
   bash manage.sh --dry-run --profile daily
   bash manage.sh --yes --section core
+  bash manage.sh --profile daily --desktop gnome
   bash manage.sh --no --section kde
   bash manage.sh --revert kde
   bash manage.sh --audit
@@ -45,9 +47,10 @@ Options:
   --dry-run            Print what would run without making changes
   --yes                Answer yes to installer prompts
   --no                 Answer no to installer prompts
-  --profile NAME       minimal, daily, dev, kde-polish, media, gaming, privacy, ai, full-send
-  --section NAME       core, extras, kde, ai, security
-  --revert NAME        core, extras, kde, ai, security, all
+  --profile NAME       minimal, daily, dev, kde-polish, gnome-polish, media, gaming, privacy, ai, full-send
+  --desktop NAME       auto, kde, gnome
+  --section NAME       core, extras, kde, gnome, ai, security
+  --revert NAME        core, extras, kde, gnome, ai, security, all
   --audit              Run scripts/audit-public.sh
   -h, --help           Show this help
 USAGE
@@ -60,6 +63,10 @@ while [ "$#" -gt 0 ]; do
   --no) ASSUME="no" ;;
   --profile)
     PROFILE="${2:-}"
+    shift
+    ;;
+  --desktop)
+    DESKTOP="${2:-}"
     shift
     ;;
   --section)
@@ -84,6 +91,14 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
+case "$DESKTOP" in
+auto | kde | gnome) ;;
+*)
+  printf 'Unknown desktop: %s\n' "$DESKTOP" >&2
+  exit 1
+  ;;
+esac
+
 ui_intro 2>/dev/null || true
 ui_title "Fedora Plasma Glow Kit Guided Setup" 2>/dev/null || echo "Fedora Plasma Glow Kit Guided Setup"
 
@@ -101,6 +116,9 @@ ask() {
 # shellcheck source=/dev/null
 # shellcheck disable=SC1091
 [ -f "$ROOT_DIR/lib/preflight.sh" ] && . "$ROOT_DIR/lib/preflight.sh"
+# shellcheck source=/dev/null
+# shellcheck disable=SC1091
+[ -f "$ROOT_DIR/lib/state.sh" ] && . "$ROOT_DIR/lib/state.sh"
 
 if [ "$DRY_RUN" -eq 0 ] && [ "$RUN_AUDIT" -eq 0 ] && [ -z "$REVERT_SECTION" ]; then
   FEDORA_PLASMA_GLOW_ASSUME="$ASSUME" fedora_hardware_preflight
@@ -121,15 +139,64 @@ run_cmd() {
 }
 
 run_section_by_id() {
-  case "$1" in
-  core) run_cmd "Core CLI and Shell" bash "$ROOT_DIR/install.sh" ;;
-  extras) run_cmd "Optional Apps and Extras" bash "$ROOT_DIR/install-extras.sh" ;;
-  kde) run_cmd "KDE Plasma Customization" bash "$ROOT_DIR/install-kde.sh" ;;
-  ai) run_cmd "AI CLI Tools" bash "$ROOT_DIR/install-ai.sh" ;;
-  security) run_cmd "Security Best Practices" bash "$ROOT_DIR/install-security.sh" ;;
+  local id="$1" label script code
+  case "$id" in
+  core)
+    label="Core CLI and Shell"
+    script="$ROOT_DIR/install.sh"
+    ;;
+  extras)
+    label="Optional Apps and Extras"
+    script="$ROOT_DIR/install-extras.sh"
+    ;;
+  kde)
+    label="KDE Plasma Customization"
+    script="$ROOT_DIR/install-kde.sh"
+    ;;
+  gnome)
+    label="GNOME Desktop Customization"
+    script="$ROOT_DIR/install-gnome.sh"
+    ;;
+  ai)
+    label="AI CLI Tools"
+    script="$ROOT_DIR/install-ai.sh"
+    ;;
+  security)
+    label="Security Best Practices"
+    script="$ROOT_DIR/install-security.sh"
+    ;;
   *)
-    printf 'Unknown section: %s\n' "$1" >&2
+    printf 'Unknown section: %s\n' "$id" >&2
     exit 1
+    ;;
+  esac
+  if [ "$DRY_RUN" -eq 1 ]; then
+    run_cmd "$label" bash "$script"
+    return
+  fi
+  begin_transaction "$id"
+  if run_cmd "$label" bash "$script"; then
+    complete_transaction
+  else
+    code=$?
+    fail_transaction "$code"
+    return "$code"
+  fi
+}
+
+detected_desktop() {
+  local current
+  if [ "$DESKTOP" != "auto" ]; then
+    printf '%s\n' "$DESKTOP"
+    return
+  fi
+  current="${XDG_CURRENT_DESKTOP:-} ${XDG_SESSION_DESKTOP:-} ${DESKTOP_SESSION:-}"
+  case "${current,,}" in
+  *kde* | *plasma*) printf 'kde\n' ;;
+  *gnome*) printf 'gnome\n' ;;
+  *)
+    printf 'Unable to detect KDE or GNOME; pass --desktop kde or --desktop gnome.\n' >&2
+    return 1
     ;;
   esac
 }
@@ -146,16 +213,26 @@ section_index_by_id() {
 }
 
 profile_sections() {
+  local desktop
   case "$1" in
   minimal) printf '%s\n' core security ;;
-  daily) printf '%s\n' core extras kde security ;;
+  daily)
+    desktop="$(detected_desktop)" || exit 1
+    printf '%s\n' core extras "$desktop" security
+    ;;
   dev) printf '%s\n' core extras ai security ;;
   kde-polish) printf '%s\n' kde ;;
-  media) printf '%s\n' core extras kde ;;
-  gaming) printf '%s\n' core extras kde ;;
+  gnome-polish) printf '%s\n' gnome ;;
+  media | gaming)
+    desktop="$(detected_desktop)" || exit 1
+    printf '%s\n' core extras "$desktop"
+    ;;
   privacy) printf '%s\n' core security ;;
   ai) printf '%s\n' core ai ;;
-  full-send) printf '%s\n' core extras kde ai security ;;
+  full-send)
+    desktop="$(detected_desktop)" || exit 1
+    printf '%s\n' core extras "$desktop" ai security
+    ;;
   *)
     printf 'Unknown profile: %s\n' "$1" >&2
     exit 1
@@ -382,6 +459,9 @@ interactive_section extras "Optional Apps and Extras" \
 
 interactive_section kde "KDE Plasma Desktop Customization" \
   "KDE packages, lightweight theme assets, Panel Colorizer tuning, optional Rounded Corners, reviewed hotkeys, KWin plugins, and Konsole profile."
+
+interactive_section gnome "GNOME Desktop Customization" \
+  "GNOME tools, reversible appearance settings, optional AppIndicator tray support, and a curated Fedora Workstation profile."
 
 interactive_section ai "AI CLI Tools" \
   "Opt-in AI terminal tools like Codex CLI and Claude Code without copying API keys, account files, prompts, histories, or tool state."

@@ -1,0 +1,25 @@
+.TH GLOW-KIT-GUI 1 "July 2026" "Fedora Glow Kit 1.0.0" "User Commands"
+.SH NAME
+glow-kit-gui \- open the Fedora Glow Kit control deck and optional tray
+.SH SYNOPSIS
+.B glow-kit-gui
+.RI [ --tray ]
+.SH DESCRIPTION
+.B glow-kit-gui
+previews Fedora Glow Kit profiles, target desktops, update commands, and
+recovery actions.
+Mutating actions open the
+.BR glow-kit (1)
+command-line interface in a visible terminal.
+The graphical process does not request privileges.
+.SH OPTIONS
+.TP
+.B --tray
+Start with the system-tray integration enabled.
+Tray startup remains opt-in and can be disabled in settings.
+.SH PRIVACY
+The application is local-only.
+It does not collect telemetry, usernames, hostnames, serial numbers, network
+addresses, or device inventories.
+.SH SEE ALSO
+.BR glow-kit (1)

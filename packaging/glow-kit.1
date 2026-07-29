@@ -1,0 +1,50 @@
+.TH GLOW-KIT 1 "July 2026" "Fedora Glow Kit 1.0.0" "User Commands"
+.SH NAME
+glow-kit \- safely preview, apply, inspect, and revert Fedora Glow Kit
+.SH SYNOPSIS
+.B glow-kit
+.I command
+.RI [ options ]
+.SH DESCRIPTION
+.B glow-kit
+is the command-line interface for Fedora Glow Kit.
+It keeps installation state in a private XDG state file, supports Fedora 44
+KDE Plasma and GNOME Workstation, and does not collect telemetry.
+.SH COMMANDS
+.TP
+.B status
+Show target support and aggregate kit-managed state.
+.TP
+.B plan
+Preview an ordered installation profile without changing the system.
+.TP
+.B apply
+Run a confirmed installation flow.
+.TP
+.B revert
+Remove changes recorded for one section or for the whole kit.
+.TP
+.B update
+Preview safe update commands; add
+.B --apply
+to run them.
+.TP
+.B diagnostics
+Print a local report without personal or device identifiers.
+.TP
+.B audit
+Run the repository public-readiness checks.
+.SH EXIT STATUS
+Zero indicates success.
+One indicates cancellation or a failed maintenance command.
+Two indicates invalid input, an unsupported target, or a refused export.
+Installer exit codes may be propagated.
+.SH FILES
+.TP
+.I ~/.local/state/fedora-plasma-glow-kit/install.state
+Private record of changes made by the kit.
+.TP
+.I ~/.config/fedora-plasma-glow-kit/settings.json
+Private GUI preferences.
+.SH SEE ALSO
+.BR glow-kit-gui (1)

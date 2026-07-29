@@ -5,12 +5,13 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DNF="${DNF:-dnf}"
 CHANGED=()
 SKIPPED=()
-STATE_DIR="$HOME/.local/state/fedora-plasma-glow-kit"
-STATE_FILE="$STATE_DIR/install.state"
 
 # shellcheck source=/dev/null
 # shellcheck disable=SC1091
 [ -f "$ROOT_DIR/shell/ui.sh" ] && . "$ROOT_DIR/shell/ui.sh"
+# shellcheck source=/dev/null
+# shellcheck disable=SC1091
+[ -f "$ROOT_DIR/lib/state.sh" ] && . "$ROOT_DIR/lib/state.sh"
 ui_intro 2>/dev/null || true
 ui_title "Fedora Plasma Glow Kit Security" 2>/dev/null || echo "Fedora Plasma Glow Kit Security"
 
@@ -35,20 +36,18 @@ command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
-record_state() {
-  local key="$1" value="$2"
-  mkdir -p "$STATE_DIR"
-  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >>"$STATE_FILE"
-}
-
 install_security_packages() {
-  local pkgs=(firewalld policycoreutils policycoreutils-python-utils setroubleshoot-server fwupd dnf-automatic usbguard) pkg new_pkgs=()
+  local pkgs=(firewalld policycoreutils policycoreutils-python-utils setroubleshoot-server fwupd dnf5-plugin-automatic usbguard) pkg new_pkgs=()
   for pkg in "${pkgs[@]}"; do
     rpm -q "$pkg" >/dev/null 2>&1 || new_pkgs+=("$pkg")
   done
-  sudo "$DNF" install -y "${pkgs[@]}"
+  dnf_install_tracked "$DNF" install -y "${pkgs[@]}"
   for pkg in "${new_pkgs[@]}"; do
-    rpm -q "$pkg" >/dev/null 2>&1 && record_state dnf "$pkg"
+    if rpm -q "$pkg" >/dev/null 2>&1; then
+      record_state dnf "$pkg"
+    else
+      SKIPPED+=("$pkg unavailable from enabled repositories")
+    fi
   done
 }
 
@@ -69,7 +68,10 @@ if ask "Install practical Fedora security tools?" "y"; then
 fi
 
 if ask "Enable and start firewalld?" "y"; then
+  firewalld_was_enabled=0
+  systemctl is-enabled --quiet firewalld 2>/dev/null && firewalld_was_enabled=1
   sudo systemctl enable --now firewalld
+  [ "$firewalld_was_enabled" -eq 1 ] || record_state service firewalld
   CHANGED+=("enabled firewalld")
 fi
 
@@ -81,12 +83,19 @@ if command_exists getenforce && [ "$(getenforce)" != "Enforcing" ]; then
 fi
 
 if ask "Enable fwupd refresh timer for firmware update checks?" "y"; then
-  sudo systemctl enable --now fwupd-refresh.timer || true
+  fwupd_was_enabled=0
+  systemctl is-enabled --quiet fwupd-refresh.timer 2>/dev/null && fwupd_was_enabled=1
+  if sudo systemctl enable --now fwupd-refresh.timer; then
+    [ "$fwupd_was_enabled" -eq 1 ] || record_state service fwupd-refresh.timer
+  fi
   CHANGED+=("enabled fwupd refresh timer")
 fi
 
 if ask "Enable dnf-automatic timer for update notifications/download policy?" "n"; then
+  automatic_was_enabled=0
+  systemctl is-enabled --quiet dnf-automatic.timer 2>/dev/null && automatic_was_enabled=1
   sudo systemctl enable --now dnf-automatic.timer
+  [ "$automatic_was_enabled" -eq 1 ] || record_state service dnf-automatic.timer
   CHANGED+=("enabled dnf-automatic timer")
 fi
 

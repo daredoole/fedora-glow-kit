@@ -95,6 +95,15 @@ This catalog is intentionally opinionated, reversible, and package-manager first
 | power-profiles-daemon | DNF | Power profile and battery/performance integration. |
 | lm_sensors | DNF | Hardware temperature and sensor detection support. |
 | papirus-icon-theme | DNF | Broad icon theme coverage. |
+
+## GNOME Desktop
+
+| App | Source | What it does |
+| --- | --- | --- |
+| GNOME Tweaks | DNF | Reviews and adjusts supported GNOME appearance options. |
+| Extensions | DNF | Manages installed GNOME Shell extensions. |
+| AppIndicator support | DNF | Optional tray support for StatusNotifierItem applications. |
+| Papirus icons | DNF | Shared KDE/GNOME icon profile with complete rollback. |
 | variety | DNF | Wallpaper rotation utility. |
 | qt6-qttools | DNF | Qt tools useful for KDE configuration. |
 | kdeconnectd | DNF | Phone and device integration backend. |

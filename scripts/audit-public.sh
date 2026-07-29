@@ -55,6 +55,26 @@ check "dependabot config exists" test -f "$ROOT_DIR/.github/dependabot.yml"
 check "code owners file exists" test -f "$ROOT_DIR/.github/CODEOWNERS"
 check "contributing file exists" test -f "$ROOT_DIR/CONTRIBUTING.md"
 check "changelog file exists" test -f "$ROOT_DIR/CHANGELOG.md"
+check "RPM spec exists" test -f "$ROOT_DIR/packaging/fedora-glow-kit.spec"
+check "RPM lint policy exists" test -f "$ROOT_DIR/.rpmlintrc"
+check "CLI manual page exists" test -f "$ROOT_DIR/packaging/glow-kit.1"
+check "GUI manual page exists" test -f "$ROOT_DIR/packaging/glow-kit-gui.1"
+check "CLI contract exists" test -f "$ROOT_DIR/docs/cli.md"
+check "threat model exists" test -f "$ROOT_DIR/docs/threat-model.md"
+check "diagnostics privacy contract exists" test -f "$ROOT_DIR/docs/diagnostics-and-privacy.md"
+check "VM release harness exists" test -f "$ROOT_DIR/scripts/vm-release-test.sh"
+check "VM guest gate exists" test -f "$ROOT_DIR/tests/vm/guest-release-gate.sh"
+
+section "Application validation"
+check "Python sources compile" python3 -m compileall -q "$ROOT_DIR/glow_kit"
+check "Python tests pass" \
+  bash -c 'cd "$1" && python3 -m unittest discover -s tests -p "test_*.py"' _ "$ROOT_DIR"
+if command -v desktop-file-validate >/dev/null 2>&1; then
+  check "desktop entry validates" \
+    desktop-file-validate "$ROOT_DIR/packaging/fedora-glow-kit.desktop"
+else
+  printf '[WARN] desktop-file-validate not installed; skipping\n'
+fi
 
 section "Public safety scan"
 check "no private key or credential-shaped files" \
@@ -78,10 +98,22 @@ if command -v rg >/dev/null 2>&1; then
   check "no README placeholder clone URL" \
     bash -c 'cd "$1" && ! rg -n --hidden --glob "!.git/**" --glob "!scripts/audit-public.sh" "github.com/<you>|<you>/" .' _ "$ROOT_DIR"
 
-  check "no old public project branding" \
-    bash -c 'cd "$1" && ! rg -n --hidden --glob "!.git/**" --glob "!CHANGELOG.md" --glob "!scripts/audit-public.sh" "Fedora Glow Kit|fedora-glow-kit" .' _ "$ROOT_DIR"
+  check "no legacy starter-kit branding in runtime paths" \
+    bash -c 'cd "$1" && ! rg -n "STATE_DIR=.*fedora-starter-kit|state_dir=.*fedora-starter-kit" install*.sh manage.sh revert.sh shell glow_kit' _ "$ROOT_DIR"
 else
   printf '[WARN] ripgrep not installed; skipping text safety scans\n'
+fi
+
+section "Secret scanners"
+if command -v gitleaks >/dev/null 2>&1; then
+  check "Gitleaks working tree scan" \
+    gitleaks dir "$ROOT_DIR" --redact --no-banner --no-color
+  if git -C "$ROOT_DIR" rev-parse --git-dir >/dev/null 2>&1; then
+    check "Gitleaks history scan" \
+      gitleaks git "$ROOT_DIR" --redact --no-banner --no-color
+  fi
+else
+  printf '[WARN] gitleaks not installed; skipping secret scan\n'
 fi
 
 check "no generated icon theme caches" \

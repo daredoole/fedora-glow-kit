@@ -1,4 +1,4 @@
 name = "gaming"
 description = "Gaming-friendly setup. Steam/Heroic/Moonlight and RPM Fusion remain opt-in."
-sections = ["core", "extras", "kde"]
+sections = ["core", "extras", "desktop"]
 risk = "medium"

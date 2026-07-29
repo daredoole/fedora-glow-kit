@@ -1,0 +1,37 @@
+rules:
+  - id: glow-kit-no-eval
+    message: Do not execute dynamically constructed shell content.
+    severity: ERROR
+    languages:
+      - generic
+    paths:
+      include:
+        - "*.sh"
+        - "/bin/*"
+      exclude:
+        - "/configs/**"
+    pattern-regex: '(^|[;&|[:space:]])eval[[:space:]]'
+
+  - id: glow-kit-no-remote-pipe
+    message: Remote content must never be piped directly into a shell.
+    severity: ERROR
+    languages:
+      - generic
+    paths:
+      include:
+        - "*.sh"
+        - "/bin/*"
+      exclude:
+        - "/configs/**"
+    pattern-regex: '(curl|wget)[^\n|]*\|[[:space:]]*(ba)?sh'
+
+  - id: glow-kit-no-world-writable-files
+    message: Do not make kit state or configuration world-writable.
+    severity: ERROR
+    languages:
+      - generic
+    paths:
+      include:
+        - "*.sh"
+        - "/bin/*"
+    pattern-regex: 'chmod[[:space:]]+(-R[[:space:]]+)?(666|777)'

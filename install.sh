@@ -8,12 +8,13 @@ INSTALLED=()
 SKIPPED=()
 CHANGED=()
 LAST_BACKUP_PATH=""
-STATE_DIR="$HOME/.local/state/fedora-plasma-glow-kit"
-STATE_FILE="$STATE_DIR/install.state"
 
 # shellcheck source=/dev/null
 # shellcheck disable=SC1091
 [ -f "$ROOT_DIR/shell/ui.sh" ] && . "$ROOT_DIR/shell/ui.sh"
+# shellcheck source=/dev/null
+# shellcheck disable=SC1091
+[ -f "$ROOT_DIR/lib/state.sh" ] && . "$ROOT_DIR/lib/state.sh"
 ui_intro 2>/dev/null || true
 ui_title "Fedora Plasma Glow Kit" 2>/dev/null || echo "Fedora Plasma Glow Kit"
 
@@ -34,12 +35,6 @@ ask() {
 
 command_exists() {
   command -v "$1" >/dev/null 2>&1
-}
-
-record_state() {
-  local key="$1" value="$2"
-  mkdir -p "$STATE_DIR"
-  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >>"$STATE_FILE"
 }
 
 add_pkg_if_missing() {
@@ -201,15 +196,14 @@ add_pkg_if_missing distrobox distrobox
 if [ "${#MISSING_PKGS[@]}" -gt 0 ] && ask "Install core CLI/dev packages?" "y"; then
   mapfile -t UNIQUE_PKGS < <(printf '%s\n' "${MISSING_PKGS[@]}" | sort -u)
   ui_section "Packages" 2>/dev/null || true
-  ui_info "Packages to attempt: ${UNIQUE_PKGS[*]}" 2>/dev/null || echo "Packages to attempt: ${UNIQUE_PKGS[*]}"
-  ui_info "Using --skip-unavailable so one missing Fedora package does not stop the whole setup." 2>/dev/null || true
-  sudo "$DNF" install -y --skip-unavailable "${UNIQUE_PKGS[@]}"
+  ui_info "Packages to install: ${UNIQUE_PKGS[*]}" 2>/dev/null || echo "Packages to install: ${UNIQUE_PKGS[*]}"
+  dnf_install_tracked "$DNF" install -y --skip-unavailable "${UNIQUE_PKGS[@]}"
   for pkg in "${UNIQUE_PKGS[@]}"; do
     if rpm -q "$pkg" >/dev/null 2>&1; then
       record_state dnf "$pkg"
       INSTALLED+=("$pkg")
     else
-      SKIPPED+=("$pkg unavailable or not installed")
+      SKIPPED+=("$pkg unavailable from enabled repositories")
     fi
   done
 else
@@ -340,7 +334,10 @@ else
 fi
 
 if command_exists flatpak && ask "Ensure Flathub remote is configured?" "y"; then
-  flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+  if ! flatpak remotes --user --columns=name 2>/dev/null | grep -Fqx flathub; then
+    record_state flatpak_remote flathub
+  fi
+  flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
   CHANGED+=("ensured Flathub remote")
 fi
 

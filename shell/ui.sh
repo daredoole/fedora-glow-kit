@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash
 
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
   UI_RESET=$'\033[0m'

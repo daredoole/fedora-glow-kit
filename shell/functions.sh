@@ -49,11 +49,54 @@ serve_here() {
   python3 -m http.server "$port"
 }
 
-update_all() {
-  sudo dnf upgrade --refresh
-  if command -v flatpak >/dev/null 2>&1; then
-    flatpak update
+_glow_confirm() {
+  local prompt="$1" reply
+  [ -t 0 ] || {
+    printf '%s\n' "Confirmation requires an interactive terminal." >&2
+    return 1
+  }
+  printf '%s [y/N] ' "$prompt"
+  read -r reply
+  case "$reply" in
+  y | Y | yes | YES) return 0 ;;
+  *) return 1 ;;
+  esac
+}
+
+glow_update() {
+  if command -v glow-kit >/dev/null 2>&1; then
+    glow-kit update --apply "$@"
+    return
   fi
+  printf '%s\n' \
+    "Update preview:" \
+    "  sudo dnf upgrade --refresh" \
+    "  flatpak update (when available)" \
+    "  fwupdmgr get-updates (check only)"
+  _glow_confirm "Run the package updates shown above?" || {
+    printf '%s\n' "Update cancelled."
+    return 1
+  }
+  sudo dnf upgrade --refresh
+  command -v flatpak >/dev/null 2>&1 && flatpak update
+  command -v fwupdmgr >/dev/null 2>&1 && fwupdmgr get-updates
+}
+
+glow_cleanup() {
+  printf '%s\n' \
+    "Cleanup preview:" \
+    "  sudo dnf autoremove" \
+    "  sudo dnf clean all"
+  _glow_confirm "Remove unused packages and clear the DNF cache?" || {
+    printf '%s\n' "Cleanup cancelled."
+    return 1
+  }
+  sudo dnf autoremove
+  sudo dnf clean all
+}
+
+update_all() {
+  glow_update "$@"
 }
 
 qedit() {
@@ -100,7 +143,8 @@ if ! command -v halp >/dev/null 2>&1; then
 Fedora Plasma Glow Kit help
 
 Core commands:
-  update_all             Update DNF packages and Flatpaks
+  update / update_all    Preview and confirm DNF, Flatpak, and firmware checks
+  cleanup                Preview and confirm DNF autoremove/cache cleanup
   mkcd DIR               Create a directory and cd into it
   extract FILE           Extract common archive formats
   serve_here [PORT]      Serve the current directory with Python
@@ -141,8 +185,8 @@ EOF
     _halp_alias path "print PATH one entry per line"
 
     _halp_section "packages & updates"
-    _halp_alias update "refresh metadata and upgrade"
-    _halp_alias cleanup "autoremove and clean DNF cache"
+    _halp_alias update "preview and confirm all updates"
+    _halp_alias cleanup "preview and confirm cleanup"
     _halp_alias pkg-search "search Fedora packages"
     _halp_alias pkg-install "install Fedora package"
     _halp_alias pkg-remove "remove Fedora package"

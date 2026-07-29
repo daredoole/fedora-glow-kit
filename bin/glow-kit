@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [ -f "$ROOT_DIR/manage.sh" ]; then
+  export PYTHONPATH="$ROOT_DIR${PYTHONPATH:+:$PYTHONPATH}"
+  export GLOW_KIT_ROOT="${GLOW_KIT_ROOT:-$ROOT_DIR}"
+else
+  export GLOW_KIT_ROOT="${GLOW_KIT_ROOT:-/usr/share/fedora-plasma-glow-kit}"
+fi
+exec python3 -m glow_kit.cli "$@"

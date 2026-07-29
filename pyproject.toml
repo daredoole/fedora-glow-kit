@@ -1,0 +1,13 @@
+[project]
+name = "fedora-glow-kit"
+version = "1.0.0"
+description = "Safe, reversible Fedora KDE and GNOME setup manager"
+requires-python = ">=3.11"
+license = "MIT"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
 
@@ -35,7 +35,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
 
@@ -43,7 +43,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y shfmt golang-go
-          go install github.com/rhysd/actionlint/cmd/actionlint@latest
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
           echo "$HOME/go/bin" >> "$GITHUB_PATH"
 
       - name: Check shell formatting
@@ -58,30 +58,75 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
 
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24.15.0
+
       - name: Install markdownlint
-        run: npm install -g markdownlint-cli
+        run: npm install -g markdownlint-cli@0.49.1
 
       - name: Lint Markdown
         run: markdownlint "**/*.md"
+
+  semgrep:
+    name: Semgrep security rules
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+
+      - name: Install pinned Semgrep
+        run: python3 -m pip install --disable-pip-version-check semgrep==1.171.0
+
+      - name: Run repository security rules
+        run: semgrep scan --config .semgrep.yml --error
+
+  python-quality:
+    name: Python quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+
+      - name: Install pinned Ruff
+        run: python3 -m pip install --disable-pip-version-check ruff==0.16.0
+
+      - name: Lint and check formatting
+        run: |
+          ruff check glow_kit tests scripts/generate-sbom.py
+          ruff format --check glow_kit tests scripts/generate-sbom.py
 
   fedora-smoke-test:
     name: Fedora dry-run smoke test
     runs-on: ubuntu-latest
     timeout-minutes: 15
     container:
-      image: fedora:latest
+      image: fedora:44
     steps:
       - name: Install git and audit tools
-        run: dnf install -y git bash findutils grep ripgrep ShellCheck || dnf install -y git bash findutils grep ripgrep shellcheck
+        run: dnf install -y git bash findutils grep ripgrep ShellCheck shfmt bats python3 python3-pyside6 desktop-file-utils golang rpm-build rpmlint
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
 
       - name: Run smoke tests
-        run: bash scripts/smoke-test.sh
+        run: |
+          go install github.com/gitleaks/gitleaks/v8@v8.27.2
+          gopath="$(go env GOPATH)"
+          export PATH="$PATH:$gopath/bin"
+          bash scripts/smoke-test.sh
+          bash scripts/build-rpm.sh
+          rpmlint -r .rpmlintrc dist/rpm/noarch/*.rpm dist/srpm/*.src.rpm
