@@ -33,7 +33,7 @@ require_supported_fedora() {
 }
 
 fedora_hardware_preflight() {
-  require_supported_fedora || return 1
+  require_supported_fedora /etc/os-release /run/ostree-booted || return 1
   [ "${FEDORA_PLASMA_GLOW_PREFLIGHT_ACK:-}" = "1" ] && return 0
 
   if [ -n "${FEDORA_PLASMA_GLOW_ASSUME:-}" ]; then

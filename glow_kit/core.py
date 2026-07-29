@@ -229,9 +229,7 @@ def status_payload(desktop: str = "auto") -> dict[str, object]:
         elif transaction_status == "complete":
             active_transactions.pop(key, None)
             active_transactions = {
-                active_key: None
-                for active_key in active_transactions
-                if active_key[1] != section
+                active_key: None for active_key in active_transactions if active_key[1] != section
             }
         elif transaction_status in {"recovered", "reverted"}:
             if section == "all":

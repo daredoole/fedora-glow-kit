@@ -16,15 +16,15 @@ SKIPPED=()
 # shellcheck disable=SC1091
 [ -f "$ROOT_DIR/lib/preflight.sh" ] && . "$ROOT_DIR/lib/preflight.sh"
 
-ui_intro 2> /dev/null || true
-ui_title "Fedora Glow Kit GNOME" 2> /dev/null || echo "Fedora Glow Kit GNOME"
+ui_intro 2>/dev/null || true
+ui_title "Fedora Glow Kit GNOME" 2>/dev/null || echo "Fedora Glow Kit GNOME"
 fedora_hardware_preflight
 
 ask() {
   local prompt="$1" default="${2:-n}" reply
   case "${FEDORA_PLASMA_GLOW_ASSUME:-}" in
-    yes | YES | y | Y | true | TRUE | 1) return 0 ;;
-    no | NO | n | N | false | FALSE | 0) return 1 ;;
+  yes | YES | y | Y | true | TRUE | 1) return 0 ;;
+  no | NO | n | N | false | FALSE | 0) return 1 ;;
   esac
   read -r -p "$prompt [$default] " reply || true
   reply="${reply:-$default}"
@@ -35,7 +35,7 @@ install_gnome_packages() {
   local packages=(gnome-tweaks gnome-extensions-app gnome-shell-extension-appindicator papirus-icon-theme)
   local package new_packages=()
   for package in "${packages[@]}"; do
-    rpm -q "$package" > /dev/null 2>&1 || new_packages+=("$package")
+    rpm -q "$package" >/dev/null 2>&1 || new_packages+=("$package")
   done
   dnf_install_tracked "$DNF" install -y "${packages[@]}"
   for package in "${new_packages[@]}"; do
@@ -50,7 +50,7 @@ install_gnome_packages() {
 
 setting_exists() {
   local schema="$1" key="$2"
-  gsettings list-keys "$schema" 2> /dev/null | grep -Fqx "$key"
+  gsettings list-keys "$schema" 2>/dev/null | grep -Fqx "$key"
 }
 
 set_gnome_setting() {
@@ -78,7 +78,7 @@ else
   SKIPPED+=("GNOME polish packages")
 fi
 
-if command -v gsettings > /dev/null 2>&1 && ask "Apply the reversible Fedora Glow appearance profile?" "y"; then
+if command -v gsettings >/dev/null 2>&1 && ask "Apply the reversible Fedora Glow appearance profile?" "y"; then
   set_gnome_setting org.gnome.desktop.interface color-scheme "'prefer-dark'"
   set_gnome_setting org.gnome.desktop.interface icon-theme "'Papirus-Dark'"
   set_gnome_setting org.gnome.desktop.interface clock-show-weekday true
@@ -87,10 +87,10 @@ else
   SKIPPED+=("GNOME appearance profile")
 fi
 
-if command -v gnome-extensions > /dev/null 2>&1 &&
+if command -v gnome-extensions >/dev/null 2>&1 &&
   ask "Enable AppIndicator tray support for this GNOME account?" "n"; then
   extension="appindicatorsupport@rgcjonas.gmail.com"
-  if ! gnome-extensions info "$extension" 2> /dev/null | grep -Fq "State: ENABLED"; then
+  if ! gnome-extensions info "$extension" 2>/dev/null | grep -Fq "State: ENABLED"; then
     if gnome-extensions enable "$extension"; then
       record_state gnome_extension "$extension"
       CHANGED+=("enabled GNOME AppIndicator extension")
@@ -103,7 +103,7 @@ if command -v gnome-extensions > /dev/null 2>&1 &&
 fi
 
 echo
-ui_title "GNOME Summary" 2> /dev/null || echo "GNOME summary"
+ui_title "GNOME Summary" 2>/dev/null || echo "GNOME summary"
 printf 'Changed:\n'
 printf '  - %s\n' "${CHANGED[@]:-(none)}"
 printf 'Skipped:\n'

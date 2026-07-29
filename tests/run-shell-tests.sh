@@ -138,7 +138,8 @@ PATH="$TEST_DIR/bin:$PATH" DNF=dnf FEDORA_PLASMA_GLOW_ASSUME=yes \
   fail "full revert exited before teardown ordering could be verified"
 remote_line="$(grep -nF 'flatpak remote-delete --user flathub' "$TEST_DIR/ops.calls" | cut -d: -f1 || true)"
 dnf_line="$(grep -nF 'sudo dnf remove -y --no-autoremove flatpak' "$TEST_DIR/ops.calls" | cut -d: -f1 || true)"
-[ -n "$remote_line" ] && [ -n "$dnf_line" ] && [ "$remote_line" -lt "$dnf_line" ] ||
+if [ -z "$remote_line" ] || [ -z "$dnf_line" ] || [ "$remote_line" -ge "$dnf_line" ]; then
   fail "full revert did not remove Flatpak remotes before the Flatpak package"
+fi
 
 printf '[OK] portable shell behavior tests passed\n'

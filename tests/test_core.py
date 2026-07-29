@@ -126,8 +126,7 @@ class CoreTests(unittest.TestCase):
                 clear=False,
             ):
                 state_path.write_text(
-                    "transaction=first|core|started\n"
-                    "transaction=first|core|failed:1\n",
+                    "transaction=first|core|started\ntransaction=first|core|failed:1\n",
                     encoding="utf-8",
                 )
                 self.assertEqual(core.status_payload("kde")["incomplete_transactions"], 1)
