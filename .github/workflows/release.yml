@@ -19,7 +19,7 @@ jobs:
       image: fedora:44
     steps:
       - name: Install release tooling
-        run: dnf install -y git bash gzip rpm-build rpm-sign python3 python3-pyside6 desktop-file-utils gnupg2 gh
+        run: dnf install -y git bash gzip rpm-build rpm-sign python3 python3-pyside6 python3-rpm-macros desktop-file-utils gnupg2 gh
 
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683

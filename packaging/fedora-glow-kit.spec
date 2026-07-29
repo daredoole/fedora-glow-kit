@@ -10,6 +10,7 @@ BuildArch:      noarch
 BuildRequires:  desktop-file-utils
 BuildRequires:  python3
 BuildRequires:  python3-pyside6
+BuildRequires:  python3-rpm-macros
 Requires:       bash
 Requires:       python3
 Requires:       python3-pyside6

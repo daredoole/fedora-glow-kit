@@ -115,7 +115,7 @@ jobs:
       image: fedora:44
     steps:
       - name: Install git and audit tools
-        run: dnf install -y git bash findutils grep ripgrep ShellCheck shfmt bats python3 python3-pyside6 desktop-file-utils golang rpm-build rpmlint
+        run: dnf install -y git bash findutils grep ripgrep ShellCheck shfmt bats python3 python3-pyside6 python3-rpm-macros desktop-file-utils golang rpm-build rpmlint
 
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
