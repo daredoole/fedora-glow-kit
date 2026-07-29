@@ -1,13 +1,4 @@
-# rpmlint defaults include several openSUSE policies that conflict with Fedora
-# packaging conventions or misclassify embedded, path-localized Plasma assets.
-addFilter(r"no-signature")
-addFilter(r"no-packager-tag")
-addFilter(r"no-group-tag")
-addFilter(r"no-dependency-on locales-kit")
-addFilter(r"invalid-license MIT")
-addFilter(r"incoherent-version-in-changelog")
-addFilter(r"no-buildroot-tag")
+# Embedded, path-localized Plasma assets intentionally contain dot-prefixed
+# metadata and locale-named files that are not system translation catalogs.
 addFilter(r"hidden-file-or-dir")
 addFilter(r"file-not-in-%lang")
-addFilter(r"cross-directory-hard-link")
-addFilter(r"manpage-not-compressed bz2")
