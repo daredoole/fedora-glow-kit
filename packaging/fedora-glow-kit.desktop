@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Fedora Glow Kit
+Comment=Preview and manage a reversible Fedora setup
+Exec=glow-kit-gui
+Icon=fedora-glow-kit
+Terminal=false
+Categories=Settings;
+Keywords=Fedora;Setup;KDE;GNOME;Updates;Recovery;
+StartupNotify=true

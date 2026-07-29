@@ -1,0 +1,4 @@
+name = "gnome-polish"
+description = "GNOME Workstation visual polish with reversible settings and opt-in tray support."
+sections = ["gnome"]
+risk = "medium"

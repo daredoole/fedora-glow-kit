@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  rpm:
+    name: Build, sign, and attest RPM
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: fedora:44
+    steps:
+      - name: Install release tooling
+        run: dnf install -y git bash gzip rpm-build rpm-sign python3 python3-pyside6 python3-rpm-macros desktop-file-utils gnupg2 gh
+
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Build release artifacts
+        run: bash scripts/build-rpm.sh
+
+      - name: Import RPM signing key
+        env:
+          RPM_SIGNING_KEY_B64: ${{ secrets.RPM_SIGNING_KEY_B64 }}
+          RPM_SIGNING_KEY_ID: ${{ secrets.RPM_SIGNING_KEY_ID }}
+        run: |
+          test -n "$RPM_SIGNING_KEY_B64"
+          test -n "$RPM_SIGNING_KEY_ID"
+          printf '%s' "$RPM_SIGNING_KEY_B64" | base64 --decode > "$RUNNER_TEMP/rpm-signing.key"
+          gpg --batch --import "$RUNNER_TEMP/rpm-signing.key"
+          printf '%%_signature gpg\n%%_gpg_name %s\n' "$RPM_SIGNING_KEY_ID" > "$HOME/.rpmmacros"
+          find dist/rpm dist/srpm -name '*.rpm' -print0 | xargs -0 rpmsign --addsign
+          find dist/rpm dist/srpm -name '*.rpm' -print0 | xargs -0 -n1 rpm --checksig
+          gpg --batch --armor --export "$RPM_SIGNING_KEY_ID" > dist/fedora-glow-kit-release-key.asc
+          rm -f "$RUNNER_TEMP/rpm-signing.key"
+
+      - name: Refresh signed checksums
+        env:
+          RPM_SIGNING_KEY_ID: ${{ secrets.RPM_SIGNING_KEY_ID }}
+        run: |
+          cd dist
+          sha256sum ./fedora-glow-kit-*.tar.gz ./rpm/noarch/*.rpm ./srpm/*.src.rpm ./*.spdx.json ./fedora-glow-kit-release-key.asc > SHA256SUMS
+          gpg --batch --yes --armor --local-user "$RPM_SIGNING_KEY_ID" --detach-sign SHA256SUMS
+
+      - name: Attest release artifacts
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be
+        with:
+          subject-path: |
+            dist/rpm/noarch/*.rpm
+            dist/srpm/*.src.rpm
+            dist/fedora-glow-kit-*.tar.gz
+            dist/*.spdx.json
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --generate-notes dist/rpm/noarch/*.rpm dist/srpm/*.src.rpm dist/fedora-glow-kit-*.tar.gz dist/*.spdx.json dist/fedora-glow-kit-release-key.asc dist/SHA256SUMS dist/SHA256SUMS.asc

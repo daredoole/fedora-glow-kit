@@ -2,6 +2,10 @@
 *.swp
 *.tmp
 .DS_Store
+__pycache__/
+*.py[cod]
+dist/
+.pytest_cache/
 
 # Local state and generated files
 .cache/

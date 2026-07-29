@@ -1,7 +1,39 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash
 # Fresh-install hardware readiness reminder.
 
+require_supported_fedora() {
+  local release_file="${1:-/etc/os-release}"
+  local ostree_marker="${2:-/run/ostree-booted}"
+  local ID="" VERSION_ID="" VARIANT_ID=""
+  local os_id="" version_id="" variant_id=""
+
+  if [ ! -r "$release_file" ]; then
+    printf 'Error: Fedora Glow Kit supports Fedora 44 KDE Plasma and GNOME Workstation only.\n' >&2
+    return 1
+  fi
+
+  # The default /etc/os-release path is trusted operating-system metadata.
+  # shellcheck disable=SC1090,SC1091
+  . "$release_file"
+  os_id="${ID:-}"
+  version_id="${VERSION_ID:-}"
+  variant_id="${VARIANT_ID:-}"
+
+  if [ "$os_id" != "fedora" ] || [ "$version_id" != "44" ]; then
+    printf 'Error: Fedora Glow Kit supports Fedora 44 only; detected %s %s.\n' \
+      "${os_id:-unknown}" "${version_id:-unknown}" >&2
+    return 1
+  fi
+
+  if [ -e "$ostree_marker" ] ||
+    [[ "$variant_id" =~ ^(silverblue|kinoite|sericea|onyx)$ ]]; then
+    printf 'Error: immutable Fedora variants are not supported by this release.\n' >&2
+    return 1
+  fi
+}
+
 fedora_hardware_preflight() {
+  require_supported_fedora /etc/os-release /run/ostree-booted || return 1
   [ "${FEDORA_PLASMA_GLOW_PREFLIGHT_ACK:-}" = "1" ] && return 0
 
   if [ -n "${FEDORA_PLASMA_GLOW_ASSUME:-}" ]; then

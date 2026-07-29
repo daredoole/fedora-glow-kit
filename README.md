@@ -1,11 +1,12 @@
-# Fedora Plasma Glow Kit
+# Fedora Glow Kit
 
-A polished, safe, reversible Fedora 44 KDE Plasma setup kit.
+A polished, safe, reversible Fedora 44 KDE Plasma and GNOME setup kit.
 
-
-A polished, safe, reversible Fedora 44 KDE Plasma setup kit.
-
-Fedora Plasma Glow Kit is a safe, reusable Fedora starter kit built from a real Fedora KDE/Workstation setup. Its goal is to give a friend a polished Linux baseline: useful CLI tools, shell quality-of-life, terminal customization, Firefox privacy/performance settings, KDE theming, optional desktop apps, and optional developer utilities.
+Fedora Glow Kit is a safe, reusable Fedora starter kit built for Fedora 44
+KDE Plasma and GNOME Workstation. Its goal is to give a friend a polished
+Linux baseline: useful CLI tools, shell quality-of-life, terminal
+customization, Firefox privacy/performance settings, reversible desktop
+polish, optional desktop apps, and optional developer utilities.
 
 It is intentionally conservative. Installers ask before changing configs, back up files before edits, skip existing theme assets, and avoid copying private data such as browser profiles, SSH keys, tokens, work aliases, VPN state, cookies, history, credentials, or machine-specific project paths.
 
@@ -15,67 +16,124 @@ Credits for bundled assets, optional extension installs, themes, and upstream to
 
 ## Quick Start
 
+Preview a curated setup with the public CLI:
+
+```bash
+git clone https://github.com/daredoole/fedora-glow-kit.git
+cd fedora-glow-kit
+./bin/glow-kit plan --profile daily --desktop kde
+./bin/glow-kit apply --profile daily --desktop kde
+```
+
+Use `--desktop gnome` for Fedora Workstation. The GUI is optional and uses
+Fedora's `python3-pyside6` package:
+
+```bash
+sudo dnf install python3-pyside6
+./bin/glow-kit-gui
+```
+
+The control deck previews actions and then opens the same visible terminal
+workflow used below. It never runs as root. Tray autostart is off until the
+user enables it; GNOME tray icons require the separately opt-in Fedora
+AppIndicator extension.
+
+Verify downloaded release artifacts before installing them:
+
+```bash
+gpg --import fedora-glow-kit-release-key.asc
+gpg --fingerprint 25687433D39D55AC254918FC100DAE86F925437B
+gpg --verify SHA256SUMS.asc SHA256SUMS
+sha256sum --check SHA256SUMS
+rpm --checksig fedora-glow-kit-*.rpm
+```
+
+The expected signing-key fingerprint is
+`2568 7433 D39D 55AC 2549 18FC 100D AE86 F925 437B`. Tagged releases also
+include GitHub build-provenance attestations.
+
 Guided setup with install/revert/skip choices per section:
 
 ```bash
-git clone https://github.com/daredoole/fedora-plasma-glow-kit.git
-cd fedora-plasma-glow-kit
+git clone https://github.com/daredoole/fedora-glow-kit.git
+cd fedora-glow-kit
 bash manage.sh
 ```
 
 If you are already inside the repo:
 
 ```bash
-cd fedora-plasma-glow-kit
+cd fedora-glow-kit
 bash manage.sh
 ```
 
 Core install:
 
 ```bash
-cd fedora-plasma-glow-kit
+cd fedora-glow-kit
 bash install.sh
 ```
 
 Optional extras:
 
 ```bash
-cd fedora-plasma-glow-kit
+cd fedora-glow-kit
 bash install-extras.sh
 ```
 
 KDE customization:
 
 ```bash
-cd fedora-plasma-glow-kit
+cd fedora-glow-kit
 bash install-kde.sh
+```
+
+GNOME customization:
+
+```bash
+cd fedora-glow-kit
+bash install-gnome.sh
 ```
 
 Security best-practice setup:
 
 ```bash
-cd fedora-plasma-glow-kit
+cd fedora-glow-kit
 bash install-security.sh
 ```
 
 AI CLI tools:
 
 ```bash
-cd fedora-plasma-glow-kit
+cd fedora-glow-kit
 bash install-ai.sh
 ```
 
 Revert kit-managed config changes:
 
 ```bash
-cd fedora-plasma-glow-kit
+cd fedora-glow-kit
 bash revert.sh
 ```
+
+Status, safe updates, and local-only diagnostics:
+
+```bash
+./bin/glow-kit status
+./bin/glow-kit update
+./bin/glow-kit diagnostics
+```
+
+`update` only previews commands until `--apply` is supplied. Diagnostics never
+include usernames, home paths, hostnames, network addresses, serial numbers,
+or device inventories. See
+[Command-Line Interface](docs/cli.md) and
+[Diagnostics And Privacy](docs/diagnostics-and-privacy.md).
 
 Public-readiness audit before sharing:
 
 ```bash
-cd fedora-plasma-glow-kit
+cd fedora-glow-kit
 bash scripts/audit-public.sh
 ```
 
@@ -97,7 +155,8 @@ NO_COLOR=1 bash install.sh
 Use `manage.sh --dry-run` to preview what would run without invoking installers, writing files, installing packages, enabling services, or changing your system:
 
 ```bash
-bash manage.sh --dry-run --profile daily
+bash manage.sh --dry-run --profile daily --desktop kde
+bash manage.sh --dry-run --profile daily --desktop gnome
 bash manage.sh --dry-run --section extras
 bash manage.sh --dry-run --section kde
 ```

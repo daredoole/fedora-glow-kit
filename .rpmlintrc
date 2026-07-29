@@ -1,0 +1,4 @@
+# Embedded, path-localized Plasma assets intentionally contain dot-prefixed
+# metadata and locale-named files that are not system translation catalogs.
+addFilter(r"hidden-file-or-dir")
+addFilter(r"file-not-in-%lang")

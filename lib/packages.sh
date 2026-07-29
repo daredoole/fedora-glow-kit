@@ -7,9 +7,11 @@ install_dnf_packages() {
   for pkg in "${pkgs[@]}"; do
     rpm -q "$pkg" >/dev/null 2>&1 || new_pkgs+=("$pkg")
   done
-  sudo "${DNF:-dnf}" install -y "${pkgs[@]}"
+  dnf_install_tracked "${DNF:-dnf}" install -y "${pkgs[@]}"
   for pkg in "${new_pkgs[@]}"; do
-    rpm -q "$pkg" >/dev/null 2>&1 && record_state dnf "$pkg"
+    if rpm -q "$pkg" >/dev/null 2>&1; then
+      record_state dnf "$pkg"
+    fi
   done
 }
 
@@ -19,21 +21,40 @@ install_dnf_packages_skip_unavailable() {
   for pkg in "${pkgs[@]}"; do
     rpm -q "$pkg" >/dev/null 2>&1 || new_pkgs+=("$pkg")
   done
-  sudo "${DNF:-dnf}" install -y --skip-unavailable "${pkgs[@]}"
+  dnf_install_tracked "${DNF:-dnf}" install -y --skip-unavailable "${pkgs[@]}"
   for pkg in "${new_pkgs[@]}"; do
-    rpm -q "$pkg" >/dev/null 2>&1 && record_state dnf "$pkg"
+    if rpm -q "$pkg" >/dev/null 2>&1; then
+      record_state dnf "$pkg"
+    fi
   done
 }
 
 install_flatpak_apps() {
   local apps=("$@")
-  local app new_apps=()
+  local app remote_was_present=0
+  local pending_apps=()
+  flatpak remotes --user --columns=name 2>/dev/null | grep -Fqx flathub && remote_was_present=1
+  if [ "$remote_was_present" -eq 0 ]; then
+    if ! flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo; then
+      return 0
+    fi
+    record_state flatpak_remote flathub
+  fi
   for app in "${apps[@]}"; do
-    flatpak info "$app" >/dev/null 2>&1 || new_apps+=("$app")
+    if flatpak info --user "$app" >/dev/null 2>&1; then
+      continue
+    fi
+    if flatpak remote-info --user flathub "$app" >/dev/null 2>&1; then
+      pending_apps+=("$app")
+    fi
   done
-  flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-  flatpak install -y flathub "${apps[@]}"
-  for app in "${new_apps[@]}"; do
-    flatpak info "$app" >/dev/null 2>&1 && record_state flatpak "$app"
+  [ "${#pending_apps[@]}" -gt 0 ] || return 0
+  flatpak install --user --noninteractive -y flathub "${pending_apps[@]}" || true
+  for app in "${pending_apps[@]}"; do
+    if flatpak info --user "$app" >/dev/null 2>&1; then
+      record_state flatpak "$app"
+    elif flatpak install --user --noninteractive -y flathub "$app"; then
+      record_state flatpak "$app"
+    fi
   done
 }

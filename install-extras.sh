@@ -5,12 +5,13 @@ DNF="${DNF:-dnf}"
 CHANGED=()
 SKIPPED=()
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-STATE_DIR="$HOME/.local/state/fedora-plasma-glow-kit"
-STATE_FILE="$STATE_DIR/install.state"
 
 # shellcheck source=/dev/null
 # shellcheck disable=SC1091
 [ -f "$ROOT_DIR/shell/ui.sh" ] && . "$ROOT_DIR/shell/ui.sh"
+# shellcheck source=/dev/null
+# shellcheck disable=SC1091
+[ -f "$ROOT_DIR/lib/state.sh" ] && . "$ROOT_DIR/lib/state.sh"
 ui_intro 2>/dev/null || true
 ui_title "Fedora Plasma Glow Kit Extras" 2>/dev/null || echo "Fedora Plasma Glow Kit Extras"
 
@@ -35,20 +36,18 @@ command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
-record_state() {
-  local key="$1" value="$2"
-  mkdir -p "$STATE_DIR"
-  grep -Fqx "$key=$value" "$STATE_FILE" 2>/dev/null || printf '%s=%s\n' "$key" "$value" >>"$STATE_FILE"
-}
-
 install_dnf() {
   local pkgs=("$@") pkg new_pkgs=()
   for pkg in "${pkgs[@]}"; do
     rpm -q "$pkg" >/dev/null 2>&1 || new_pkgs+=("$pkg")
   done
-  sudo "$DNF" install -y "${pkgs[@]}"
+  dnf_install_tracked "$DNF" install -y "${pkgs[@]}"
   for pkg in "${new_pkgs[@]}"; do
-    rpm -q "$pkg" >/dev/null 2>&1 && record_state dnf "$pkg"
+    if rpm -q "$pkg" >/dev/null 2>&1; then
+      record_state dnf "$pkg"
+    else
+      SKIPPED+=("$pkg unavailable from enabled repositories")
+    fi
   done
   CHANGED+=("installed ${pkgs[*]}")
 }
@@ -58,24 +57,92 @@ install_dnf_skip_unavailable() {
   for pkg in "${pkgs[@]}"; do
     rpm -q "$pkg" >/dev/null 2>&1 || new_pkgs+=("$pkg")
   done
-  sudo "$DNF" install -y --skip-unavailable "${pkgs[@]}"
+  dnf_install_tracked "$DNF" install -y --skip-unavailable "${pkgs[@]}"
   for pkg in "${new_pkgs[@]}"; do
-    rpm -q "$pkg" >/dev/null 2>&1 && record_state dnf "$pkg"
+    if rpm -q "$pkg" >/dev/null 2>&1; then
+      record_state dnf "$pkg"
+    else
+      SKIPPED+=("$pkg unavailable from enabled repositories")
+    fi
   done
   CHANGED+=("attempted install with skip-unavailable: ${pkgs[*]}")
 }
 
 flatpak_install() {
-  local apps=("$@") app new_apps=()
+  local apps=("$@") app remote_was_present=0
+  local pending_apps=()
+  flatpak remotes --user --columns=name 2>/dev/null | grep -Fqx flathub && remote_was_present=1
+  if [ "$remote_was_present" -eq 0 ]; then
+    if ! flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo; then
+      SKIPPED+=("Flathub remote could not be added; optional Flatpaks skipped")
+      return 0
+    fi
+    record_state flatpak_remote flathub
+  fi
   for app in "${apps[@]}"; do
-    flatpak info "$app" >/dev/null 2>&1 || new_apps+=("$app")
+    if flatpak info --user "$app" >/dev/null 2>&1; then
+      SKIPPED+=("$app already installed")
+      continue
+    fi
+    if flatpak remote-info --user flathub "$app" >/dev/null 2>&1; then
+      pending_apps+=("$app")
+    else
+      SKIPPED+=("$app unavailable from Flathub")
+    fi
   done
-  flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-  flatpak install -y flathub "${apps[@]}"
-  for app in "${new_apps[@]}"; do
-    flatpak info "$app" >/dev/null 2>&1 && record_state flatpak "$app"
+  [ "${#pending_apps[@]}" -gt 0 ] || return 0
+
+  if ! flatpak install --user --noninteractive -y flathub "${pending_apps[@]}"; then
+    SKIPPED+=("Flatpak batch transaction failed; retrying apps individually")
+  fi
+  for app in "${pending_apps[@]}"; do
+    if flatpak info --user "$app" >/dev/null 2>&1; then
+      record_state flatpak "$app"
+      CHANGED+=("installed Flatpak $app")
+    elif flatpak install --user --noninteractive -y flathub "$app"; then
+      record_state flatpak "$app"
+      CHANGED+=("installed Flatpak $app after batch fallback")
+    else
+      SKIPPED+=("$app failed to install from Flathub")
+    fi
   done
-  CHANGED+=("installed Flatpaks: ${apps[*]}")
+}
+
+enable_rpm_fusion() {
+  local fedora_version pkg
+  local packages=(rpmfusion-free-release rpmfusion-nonfree-release)
+  local new_packages=()
+  fedora_version="$(rpm -E %fedora)"
+  for pkg in "${packages[@]}"; do
+    rpm -q "$pkg" >/dev/null 2>&1 || new_packages+=("$pkg")
+  done
+  dnf_install_tracked "$DNF" install -y \
+    "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-${fedora_version}.noarch.rpm" \
+    "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${fedora_version}.noarch.rpm"
+  for pkg in "${new_packages[@]}"; do
+    if rpm -q "$pkg" >/dev/null 2>&1; then
+      record_state dnf "$pkg"
+    fi
+  done
+  CHANGED+=("enabled RPM Fusion")
+}
+
+install_rpm_fusion_ffmpeg() {
+  local ffmpeg_was_present=0 ffmpeg_free_was_present=0
+  rpm -q ffmpeg >/dev/null 2>&1 && ffmpeg_was_present=1
+  rpm -q ffmpeg-free >/dev/null 2>&1 && ffmpeg_free_was_present=1
+
+  dnf_install_tracked "$DNF" install -y --allowerasing ffmpeg
+
+  if [ "$ffmpeg_was_present" -eq 0 ] && rpm -q ffmpeg >/dev/null 2>&1; then
+    record_state dnf ffmpeg
+  fi
+  if [ "$ffmpeg_free_was_present" -eq 1 ] &&
+    ! rpm -q ffmpeg-free >/dev/null 2>&1 &&
+    ! state_values dnf | grep -Fqx ffmpeg-free; then
+    record_state dnf_restore ffmpeg-free
+  fi
+  CHANGED+=("installed RPM Fusion ffmpeg")
 }
 
 if ask "Install extra editors, terminals, and dev tools?" "y"; then
@@ -96,9 +163,13 @@ if ask "Install KDE desktop customization packages?" "y"; then
 fi
 
 if ask "Install Bluetooth headphone codec/support packages?" "y"; then
+  bluetooth_was_enabled=0
+  systemctl is-enabled --quiet bluetooth 2>/dev/null && bluetooth_was_enabled=1
   ui_section "Bluetooth Audio" 2>/dev/null || true
-  install_dnf_skip_unavailable bluez bluedevil pipewire pipewire-pulseaudio pipewire-alsa wireplumber libldac libfreeaptx fdk-aac-free ffmpeg gstreamer1-plugin-openh264 gstreamer1-plugins-bad-freeworld gstreamer1-plugins-ugly
-  sudo systemctl enable --now bluetooth || true
+  install_dnf_skip_unavailable bluez bluedevil pipewire pipewire-pulseaudio pipewire-alsa wireplumber libldac libfreeaptx fdk-aac-free gstreamer1-plugin-openh264 gstreamer1-plugins-bad-freeworld gstreamer1-plugins-ugly
+  if sudo systemctl enable --now bluetooth; then
+    [ "$bluetooth_was_enabled" -eq 1 ] || record_state service bluetooth
+  fi
   CHANGED+=("enabled bluetooth service")
 fi
 
@@ -113,13 +184,19 @@ if ask "Install Tailscale mesh VPN package from Fedora repos?" "n"; then
 fi
 
 if command_exists tailscale && ask "Enable and start tailscaled service? This does not join a tailnet." "n"; then
+  tailscale_was_enabled=0
+  systemctl is-enabled --quiet tailscaled 2>/dev/null && tailscale_was_enabled=1
   sudo systemctl enable --now tailscaled
+  [ "$tailscale_was_enabled" -eq 1 ] || record_state service tailscaled
   CHANGED+=("enabled tailscaled service")
   ui_info "Run 'sudo tailscale up' when ready to sign in and join a tailnet." 2>/dev/null || true
 fi
 
 if ask "Enable and start sysstat service?" "n"; then
+  sysstat_was_enabled=0
+  systemctl is-enabled --quiet sysstat 2>/dev/null && sysstat_was_enabled=1
   sudo systemctl enable --now sysstat
+  [ "$sysstat_was_enabled" -eq 1 ] || record_state service sysstat
   CHANGED+=("enabled sysstat")
 fi
 
@@ -129,15 +206,12 @@ if ask "Install terminal art and animation tools?" "y"; then
 fi
 
 if ask "Enable RPM Fusion free/nonfree repositories?" "n"; then
-  fedora_version="$(rpm -E %fedora)"
-  sudo "$DNF" install -y \
-    "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-${fedora_version}.noarch.rpm" \
-    "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${fedora_version}.noarch.rpm"
-  CHANGED+=("enabled RPM Fusion")
+  enable_rpm_fusion
 fi
 
 if ask "Install common multimedia codecs from RPM Fusion?" "n"; then
-  install_dnf_skip_unavailable gstreamer1-plugins-bad-freeworld gstreamer1-plugins-ugly lame ffmpeg
+  install_dnf_skip_unavailable gstreamer1-plugins-bad-freeworld gstreamer1-plugins-ugly lame
+  install_rpm_fusion_ffmpeg
 fi
 
 if ask "Install RPM Fusion Mesa VAAPI/VDPAU video acceleration packages?" "n"; then
