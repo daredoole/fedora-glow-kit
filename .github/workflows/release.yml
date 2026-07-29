@@ -28,7 +28,9 @@ jobs:
           persist-credentials: false
 
       - name: Build release artifacts
-        run: bash scripts/build-rpm.sh
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          bash scripts/build-rpm.sh
 
       - name: Import RPM signing key
         env:
