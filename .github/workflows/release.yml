@@ -58,7 +58,7 @@ jobs:
           gpg --batch --yes --armor --local-user "$RPM_SIGNING_KEY_ID" --detach-sign SHA256SUMS
 
       - name: Attest release artifacts
-        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373
         with:
           subject-path: |
             dist/rpm/noarch/*.rpm
